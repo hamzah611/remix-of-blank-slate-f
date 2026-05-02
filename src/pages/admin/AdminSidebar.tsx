@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ChevronRight, ChevronDown, Plus, Trash2, AlertTriangle, Users } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Trash2, AlertTriangle, Users, BarChart2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -515,8 +515,8 @@ interface Props {
   selectedStageId: string | null;
   onSelectStage: (stageId: string, stageType: StageType, unitId?: string) => void;
   adminRole: AdminRole;
-  selectedView: "stage" | "adminUsers";
-  onSelectView: (view: "stage" | "adminUsers") => void;
+  selectedView: "stage" | "adminUsers" | "analytics";
+  onSelectView: (view: "stage" | "adminUsers" | "analytics") => void;
 }
 
 export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, selectedView, onSelectView }: Props) {
@@ -567,9 +567,23 @@ export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, select
         )}
       </ScrollArea>
 
-      {/* Bottom nav — Admin Users (super_admin only) */}
-      {adminRole === "super_admin" && (
-        <div style={{ borderTop: "1px solid #E8E0D5", padding: "8px" }}>
+      {/* Bottom nav — Analytics (both roles) + Admin Users (super_admin only) */}
+      <div style={{ borderTop: "1px solid #E8E0D5", padding: "8px", display: "flex", flexDirection: "column", gap: 2 }}>
+        <button
+          onClick={() => onSelectView(selectedView === "analytics" ? "stage" : "analytics")}
+          className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm transition-colors"
+          style={{
+            backgroundColor: selectedView === "analytics" ? "#1E2D3D" : "transparent",
+            color: selectedView === "analytics" ? "#FAF6F0" : "#1E2D3D",
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 500,
+          }}
+        >
+          <BarChart2 size={14} />
+          Analytics
+        </button>
+        {adminRole === "super_admin" && (
           <button
             onClick={() => onSelectView(selectedView === "adminUsers" ? "stage" : "adminUsers")}
             className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm transition-colors"
@@ -584,8 +598,8 @@ export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, select
             <Users size={14} />
             Admin Users
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

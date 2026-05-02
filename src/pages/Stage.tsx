@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { QuestionShell } from "@/components/stage/QuestionShell";
@@ -82,6 +82,7 @@ export default function Stage() {
   const [wrongCount, setWrongCount] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [progressSaved, setProgressSaved] = useState(false);
+  const sessionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -89,6 +90,30 @@ export default function Stage() {
       setUserId(session.user.id);
     });
   }, [navigate]);
+
+  useEffect(() => {
+    if (!userId || !stageId) return;
+    let cancelled = false;
+    supabase
+      .from("user_sessions" as never)
+      .insert({ user_id: userId, stage_id: stageId })
+      .select("id")
+      .single()
+      .then(({ data }) => {
+        if (!cancelled && data) sessionIdRef.current = (data as { id: string }).id;
+      });
+    return () => {
+      cancelled = true;
+      const sid = sessionIdRef.current;
+      if (sid) {
+        supabase
+          .from("user_sessions" as never)
+          .update({ ended_at: new Date().toISOString() })
+          .eq("id", sid)
+          .then(() => {});
+      }
+    };
+  }, [userId, stageId]);
 
   useEffect(() => {
     if (!stageId) return;

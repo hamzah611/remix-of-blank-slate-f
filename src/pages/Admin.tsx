@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminSidebar } from "./admin/AdminSidebar";
 import { QuestionEditor } from "./admin/QuestionEditor";
 import { AdminUsers } from "./admin/AdminUsers";
+import { AdminAnalytics } from "./admin/AdminAnalytics";
 import type { StageType, AdminRole } from "./admin/adminTypes";
 import { STAGE_LABELS, getAdminRole } from "./admin/adminTypes";
 
@@ -15,7 +16,7 @@ export default function Admin() {
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
   const [selectedStageType, setSelectedStageType] = useState<StageType | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-  const [selectedView, setSelectedView] = useState<"stage" | "adminUsers">("stage");
+  const [selectedView, setSelectedView] = useState<"stage" | "adminUsers" | "analytics">("stage");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -40,9 +41,9 @@ export default function Admin() {
     setSelectedView("stage");
   };
 
-  const handleSelectView = (view: "stage" | "adminUsers") => {
+  const handleSelectView = (view: "stage" | "adminUsers" | "analytics") => {
     setSelectedView(view);
-    if (view === "adminUsers") {
+    if (view === "adminUsers" || view === "analytics") {
       setSelectedStageId(null);
       setSelectedStageType(null);
     }
@@ -95,7 +96,9 @@ export default function Admin() {
 
         {/* Main content */}
         <div className="flex-1 overflow-y-auto p-8" style={{ backgroundColor: "#FAF6F0" }}>
-          {selectedView === "adminUsers" ? (
+          {selectedView === "analytics" ? (
+            <AdminAnalytics />
+          ) : selectedView === "adminUsers" ? (
             <AdminUsers currentUserId={currentUserId} currentRole={adminRole} />
           ) : selectedStageId && selectedStageType ? (
             <div>

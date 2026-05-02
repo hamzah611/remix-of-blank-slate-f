@@ -71,6 +71,8 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -85,9 +87,10 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setNeedsConfirmation(false);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -96,10 +99,21 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast({ title: "Check your email", description: "Confirm your email to continue." });
+        // If no session returned, email confirmation is required
+        if (!data.session) {
+          setNeedsConfirmation(true);
+          toast({ title: "Check your email", description: `We sent a confirmation link to ${email}` });
+        }
+        // If session returned, onAuthStateChange handles the redirect automatically
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          if (error.message.toLowerCase().includes("email not confirmed")) {
+            setNeedsConfirmation(true);
+            throw new Error("Please confirm your email first. Check your inbox for the confirmation link.");
+          }
+          throw error;
+        }
       }
     } catch (err) {
       toast({
@@ -109,6 +123,24 @@ const Auth = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email) return;
+    setResendLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) throw error;
+      toast({ title: "Email resent", description: `Confirmation link sent to ${email}` });
+    } catch (err) {
+      toast({
+        title: "Failed to resend",
+        description: err instanceof Error ? err.message : "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -266,11 +298,39 @@ const Auth = () => {
         </button>
       </form>
 
+      {/* Resend confirmation notice */}
+      {needsConfirmation && (
+        <div
+          style={{
+            marginTop: 16,
+            padding: "12px 16px",
+            borderRadius: 8,
+            backgroundColor: "rgba(212,168,83,0.1)",
+            border: "1px solid rgba(212,168,83,0.3)",
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 13,
+            color: "#1E2D3D",
+          }}
+        >
+          <p style={{ marginBottom: 8 }}>
+            Didn't get the email? Check your spam folder or resend it.
+          </p>
+          <button
+            type="button"
+            onClick={handleResendConfirmation}
+            disabled={resendLoading}
+            className="gf-link"
+          >
+            {resendLoading ? "Sending…" : "Resend confirmation email"}
+          </button>
+        </div>
+      )}
+
       {/* Toggle */}
       <div style={{ textAlign: "center", marginTop: 24 }}>
         <button
           type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+          onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setNeedsConfirmation(false); }}
           className="gf-link"
         >
           {mode === "signin"

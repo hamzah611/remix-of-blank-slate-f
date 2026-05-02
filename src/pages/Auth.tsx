@@ -106,7 +106,13 @@ const Auth = () => {
         }
         // If session returned, onAuthStateChange handles the redirect automatically
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Request timed out — check your connection and try again.")), 10000)
+        );
+        const { error } = await Promise.race([
+          supabase.auth.signInWithPassword({ email, password }),
+          timeout,
+        ]);
         if (error) {
           if (error.message.toLowerCase().includes("email not confirmed")) {
             setNeedsConfirmation(true);

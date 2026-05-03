@@ -292,7 +292,7 @@ function StageRows({
                   <AlertTriangle
                     size={11}
                     style={{ color: "#D4A853", flexShrink: 0 }}
-                    title={`Needs ${required - count} more question${required - count !== 1 ? "s" : ""}`}
+                    aria-label={`Needs ${required - count} more question${required - count !== 1 ? "s" : ""}`}
                   />
                 )}
                 {required > 0 && (

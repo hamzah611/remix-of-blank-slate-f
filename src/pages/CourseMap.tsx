@@ -345,87 +345,100 @@ const CourseMap = () => {
 
   const loadAll = async (uid: string) => {
     setLoading(true);
+    try {
+      const { data: langData, error: langErr } = await supabase
+        .from("languages")
+        .select("id")
+        .ilike("name", language)
+        .maybeSingle();
 
-    const { data: langData } = await supabase
-      .from("languages")
-      .select("id")
-      .ilike("name", language)
-      .single();
+      if (langErr) throw langErr;
+      if (!langData) {
+        setUsingFallback(true);
+        return;
+      }
 
-    if (!langData) {
+      const { data: courseData, error: courseErr } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("language_id", langData.id)
+        .order("order_index")
+        .limit(1);
+
+      if (courseErr) throw courseErr;
+      if (!courseData || courseData.length === 0) {
+        setUsingFallback(true);
+        return;
+      }
+
+      const courseId = courseData[0].id;
+
+      const { data: unitData, error: unitErr } = await supabase
+        .from("units")
+        .select("id, title, order_index")
+        .eq("course_id", courseId)
+        .order("order_index");
+
+      if (unitErr) throw unitErr;
+      if (!unitData || unitData.length === 0) {
+        setUsingFallback(true);
+        return;
+      }
+
+      const normalizedUnits: Unit[] = unitData.map((u) => ({
+        id: u.id,
+        name: u.title,
+        order_index: u.order_index,
+      }));
+
+      const unitIds = normalizedUnits.map((u) => u.id);
+
+      const { data: stageData, error: stageErr } = await supabase
+        .from("stages")
+        .select("id, name, stage_type, stage_number, order_index, unit_id")
+        .in("unit_id", unitIds)
+        .order("order_index");
+
+      if (stageErr) throw stageErr;
+
+      const grouped: Record<string, Stage[]> = {};
+      for (const unit of normalizedUnits) {
+        grouped[unit.id] = (stageData ?? [])
+          .filter((s) => s.unit_id === unit.id)
+          .sort((a, b) => a.order_index - b.order_index) as Stage[];
+      }
+
+      const { data: progressData } = await supabase
+        .from("user_progress")
+        .select("stage_id")
+        .eq("user_id", uid)
+        .eq("completed", true);
+
+      const completed = new Set((progressData ?? []).map((p) => p.stage_id));
+
+      const { data: xpData } = await supabase
+        .from("user_xp")
+        .select("total_xp")
+        .eq("user_id", uid)
+        .maybeSingle();
+
+      const { data: streakData } = await supabase
+        .from("user_streaks")
+        .select("current_streak")
+        .eq("user_id", uid)
+        .maybeSingle();
+
+      setUnits(normalizedUnits);
+      setStagesByUnit(grouped);
+      setCompletedStageIds(completed);
+      setTotalXp((xpData as any)?.total_xp ?? 0);
+      setStreak((streakData as any)?.current_streak ?? 0);
+    } catch (err) {
+      console.error("CourseMap loadAll failed:", err);
       setUsingFallback(true);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data: courseData } = await supabase
-      .from("courses")
-      .select("id")
-      .eq("language_id", langData.id)
-      .order("order_index")
-      .limit(1);
-
-    if (!courseData || courseData.length === 0) {
-      setUsingFallback(true);
-      setLoading(false);
-      return;
-    }
-
-    const courseId = courseData[0].id;
-
-    const { data: unitData } = await supabase
-      .from("units")
-      .select("id, name, order_index")
-      .eq("course_id", courseId)
-      .order("order_index");
-
-    if (!unitData || unitData.length === 0) {
-      setUsingFallback(true);
-      setLoading(false);
-      return;
-    }
-
-    const unitIds = unitData.map((u) => u.id);
-
-    const { data: stageData } = await supabase
-      .from("stages")
-      .select("id, name, stage_type, stage_number, order_index, unit_id")
-      .in("unit_id", unitIds)
-      .order("order_index");
-
-    const grouped: Record<string, Stage[]> = {};
-    for (const unit of unitData) {
-      grouped[unit.id] = (stageData ?? [])
-        .filter((s) => s.unit_id === unit.id)
-        .sort((a, b) => a.order_index - b.order_index) as Stage[];
-    }
-
-    const { data: progressData } = await supabase
-      .from("user_progress")
-      .select("stage_id")
-      .eq("user_id", uid)
-      .eq("completed", true);
-
-    const completed = new Set((progressData ?? []).map((p) => p.stage_id));
-
-    const { data: xpData } = await supabase
-      .from("user_xp")
-      .select("total_xp")
-      .eq("user_id", uid)
-      .single();
-
-    const { data: streakData } = await supabase
-      .from("user_streaks")
-      .select("current_streak")
-      .eq("user_id", uid)
-      .single();
-
-    setUnits(unitData as Unit[]);
-    setStagesByUnit(grouped);
-    setCompletedStageIds(completed);
-    setTotalXp((xpData as any)?.total_xp ?? 0);
-    setStreak((streakData as any)?.current_streak ?? 0);
-    setLoading(false);
   };
 
   const firstAvailableStageId = (() => {

@@ -14,12 +14,70 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          id: string
+          invited_by: string | null
+          role: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          invited_by?: string | null
+          role: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          invited_by?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
+      admin_users: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          id: string
+          invited_by: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          id?: string
+          invited_by?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          invited_by?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           description: string | null
           id: string
           language_id: string
           order_index: number
+          status: string
           title: string
         }
         Insert: {
@@ -27,6 +85,7 @@ export type Database = {
           id?: string
           language_id: string
           order_index?: number
+          status?: string
           title: string
         }
         Update: {
@@ -34,6 +93,7 @@ export type Database = {
           id?: string
           language_id?: string
           order_index?: number
+          status?: string
           title?: string
         }
         Relationships: [
@@ -100,6 +160,7 @@ export type Database = {
           id: string
           order_index: number
           stage_id: string
+          status: string
           type: string
         }
         Insert: {
@@ -107,6 +168,7 @@ export type Database = {
           id?: string
           order_index?: number
           stage_id: string
+          status?: string
           type: string
         }
         Update: {
@@ -114,6 +176,7 @@ export type Database = {
           id?: string
           order_index?: number
           stage_id?: string
+          status?: string
           type?: string
         }
         Relationships: [
@@ -133,6 +196,7 @@ export type Database = {
           order_index: number
           stage_number: number
           stage_type: string
+          status: string
           unit_id: string
         }
         Insert: {
@@ -141,6 +205,7 @@ export type Database = {
           order_index?: number
           stage_number: number
           stage_type: string
+          status?: string
           unit_id: string
         }
         Update: {
@@ -149,6 +214,7 @@ export type Database = {
           order_index?: number
           stage_number?: number
           stage_type?: string
+          status?: string
           unit_id?: string
         }
         Relationships: [
@@ -166,18 +232,21 @@ export type Database = {
           course_id: string
           id: string
           order_index: number
+          status: string
           title: string
         }
         Insert: {
           course_id: string
           id?: string
           order_index?: number
+          status?: string
           title: string
         }
         Update: {
           course_id?: string
           id?: string
           order_index?: number
+          status?: string
           title?: string
         }
         Relationships: [
@@ -304,7 +373,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_delete_course: { Args: { _course_id: string }; Returns: undefined }
+      admin_delete_language: {
+        Args: { _language_id: string }
+        Returns: undefined
+      }
+      admin_delete_unit: { Args: { _unit_id: string }; Returns: undefined }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

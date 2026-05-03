@@ -96,7 +96,7 @@ export default function Stage() {
     let cancelled = false;
     supabase
       .from("user_sessions" as never)
-      .insert({ user_id: userId, stage_id: stageId })
+      .insert({ user_id: userId, stage_id: stageId } as never)
       .select("id")
       .single()
       .then(({ data }) => {
@@ -108,7 +108,7 @@ export default function Stage() {
       if (sid) {
         supabase
           .from("user_sessions" as never)
-          .update({ ended_at: new Date().toISOString() })
+          .update({ ended_at: new Date().toISOString() } as never)
           .eq("id", sid)
           .then(() => {});
       }
@@ -175,7 +175,6 @@ export default function Stage() {
           user_id: userId,
           stage_id: stageId,
           completed: true,
-          score: Math.round(accuracy * 100),
           completed_at: new Date().toISOString(),
         },
         { onConflict: "user_id,stage_id" }

@@ -342,7 +342,7 @@ export async function inviteAdminUser(email: string, role: "super_admin" | "cont
     email,
     role,
     invited_by: invitedBy,
-  });
+  } as never);
   if (error) throw error;
 }
 

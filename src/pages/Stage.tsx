@@ -175,7 +175,6 @@ export default function Stage() {
           user_id: userId,
           stage_id: stageId,
           completed: true,
-          score: Math.round(accuracy * 100),
           completed_at: new Date().toISOString(),
         },
         { onConflict: "user_id,stage_id" }

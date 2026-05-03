@@ -323,15 +323,19 @@ const CourseMap = () => {
   const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { navigate("/auth"); return; }
-      setUserId(session.user.id);
-      const name =
-        (session.user.user_metadata?.display_name as string | undefined) ??
-        session.user.email?.split("@")[0] ??
-        "U";
-      setDisplayName(name);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!session) { navigate("/auth"); return; }
+        setUserId(session.user.id);
+        const name =
+          (session.user.user_metadata?.display_name as string | undefined) ??
+          session.user.email?.split("@")[0] ??
+          "U";
+        setDisplayName(name);
+      })
+      .catch(() => {
+        navigate("/auth");
+      });
   }, [navigate]);
 
   useEffect(() => {

@@ -380,7 +380,7 @@ function UnitRow({
         suffix={
           <span className="flex items-center gap-1 ml-1">
             {hasAnyUnderfull && !isPublished && (
-              <AlertTriangle size={11} style={{ color: "#D4A853" }} title="Some stages need more questions" />
+              <AlertTriangle size={11} style={{ color: "#D4A853" }} aria-label="Some stages need more questions" />
             )}
             {unit.status && (
               <span

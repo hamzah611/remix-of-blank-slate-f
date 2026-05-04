@@ -45,6 +45,26 @@ function IconBtn({ onClick, children, title }: { onClick?: () => void; children:
   );
 }
 
+// For use as a Radix Dialog/AlertDialog trigger via asChild — must forward
+// props/ref and must NOT stopPropagation (Radix needs the click).
+const TriggerIconBtn = React.forwardRef<
+  HTMLButtonElement,
+  { children: React.ReactNode; title?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ children, title, onClick, ...props }, ref) => (
+  <button
+    ref={ref}
+    type="button"
+    title={title}
+    onClick={(e) => { e.stopPropagation(); onClick?.(e); }}
+    className="p-1 rounded opacity-40 hover:opacity-100 transition-opacity"
+    style={{ color: "#1E2D3D", background: "none", border: "none", cursor: "pointer" }}
+    {...props}
+  >
+    {children}
+  </button>
+));
+TriggerIconBtn.displayName = "TriggerIconBtn";
+
 // ── Dialogs ────────────────────────────────────────────────
 
 const langSchema = z.object({ name: z.string().min(1), code: z.string().min(1).max(20) });

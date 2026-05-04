@@ -11,8 +11,10 @@ import {
   RotateCcw,
   MessageCircle,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getAdminRole } from "./admin/adminTypes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

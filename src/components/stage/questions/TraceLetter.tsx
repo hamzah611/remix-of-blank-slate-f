@@ -79,8 +79,12 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     initCanvas();
   }, [content.letter]);
 
+  // Compute font size and baseline y so any Arabic letter (incl. deep descenders like ج) fits
+  const FONT_SIZE = 120;
+  const BASELINE_Y = Math.round(SIZE * 0.55); // 143px — gives ~84px ascent room and ~117px descent room
+
   const initCanvas = async () => {
-    try { await document.fonts.load(`180px "Amiri"`); } catch { /* already loaded */ }
+    try { await document.fonts.load(`${FONT_SIZE}px "Amiri"`); } catch { /* already loaded */ }
     const canvas = canvasRef.current;
     if (!canvas) return;
     drawLetterTemplate(canvas.getContext("2d")!);
@@ -89,11 +93,11 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     const off = document.createElement("canvas");
     off.width = SIZE; off.height = SIZE;
     const offCtx = off.getContext("2d")!;
-    offCtx.font = "180px Amiri";
+    offCtx.font = `${FONT_SIZE}px Amiri`;
     offCtx.textAlign = "center";
-    offCtx.textBaseline = "middle";
+    offCtx.textBaseline = "alphabetic";
     offCtx.fillStyle = "black";
-    offCtx.fillText(content.letter as string, SIZE / 2, SIZE / 2 + 10);
+    offCtx.fillText(content.letter as string, SIZE / 2, BASELINE_Y);
     const imageData = offCtx.getImageData(0, 0, SIZE, SIZE);
     offDataRef.current = imageData.data;
 
@@ -108,11 +112,11 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
 
   const drawLetterTemplate = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, SIZE, SIZE);
-    ctx.font = "180px Amiri";
+    ctx.font = `${FONT_SIZE}px Amiri`;
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "rgba(30, 45, 61, 0.08)";
-    ctx.fillText(content.letter as string, SIZE / 2, SIZE / 2 + 10);
+    ctx.fillText(content.letter as string, SIZE / 2, BASELINE_Y);
   };
 
   // Redraw the full canvas from allStrokes (used after undo/redo/clear)

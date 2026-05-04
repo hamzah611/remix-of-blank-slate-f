@@ -65,6 +65,7 @@ function TraceLetterFields({ form }: { form: UseFormReturn<any> }) {
   const tolerance = useWatch({ control: form.control, name: "tolerance" }) ?? 3;
   const referencePoints: { x: number; y: number }[][] =
     useWatch({ control: form.control, name: "reference_points" }) ?? [];
+  const letterValue: string = useWatch({ control: form.control, name: "letter" }) ?? "";
 
   return (
     <>
@@ -91,6 +92,7 @@ function TraceLetterFields({ form }: { form: UseFormReturn<any> }) {
         <StrokeCanvas
           value={referencePoints}
           onChange={(pts) => form.setValue("reference_points", pts)}
+          letter={letterValue || undefined}
         />
       </FormItem>
 

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
 const SIZE = 260;
+const FONT_SIZE = 120;
+const BASELINE_Y = Math.round(SIZE * 0.55); // matches TraceLetter.tsx
 
 interface Point { x: number; y: number }
 
@@ -8,25 +10,39 @@ interface Props {
   value: Point[][];
   onChange: (strokes: Point[][]) => void;
   readonly?: boolean;
+  letter?: string;
 }
 
-export function StrokeCanvas({ value, onChange, readonly = false }: Props) {
+export function StrokeCanvas({ value, onChange, readonly = false, letter }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
   const allStrokes = useRef<Point[][]>(value);
   const currentStroke = useRef<Point[]>([]);
 
-  // Sync allStrokes ref and redraw whenever value changes externally (e.g., form reset)
+  // Sync allStrokes ref and redraw whenever value or letter changes
   useEffect(() => {
     allStrokes.current = value;
     redrawFromStrokes(value);
-  }, [value]);
+  }, [value, letter]);
+
+  // Draw faint letter template so admin sees the letter while drawing reference strokes
+  const drawTemplate = (ctx: CanvasRenderingContext2D) => {
+    if (!letter) return;
+    ctx.save();
+    ctx.font = `${FONT_SIZE}px Amiri`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "rgba(30, 45, 61, 0.08)";
+    ctx.fillText(letter, SIZE / 2, BASELINE_Y);
+    ctx.restore();
+  };
 
   const redrawFromStrokes = (strokes: Point[][]) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, SIZE, SIZE);
+    drawTemplate(ctx);
     ctx.strokeStyle = "#1E2D3D";
     ctx.lineWidth = 4;
     ctx.lineCap = "round";
@@ -111,6 +127,7 @@ export function StrokeCanvas({ value, onChange, readonly = false }: Props) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, SIZE, SIZE);
+    drawTemplate(ctx);
     currentStroke.current = [];
     allStrokes.current = [];
     onChange([]);

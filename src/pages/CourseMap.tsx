@@ -11,8 +11,10 @@ import {
   RotateCcw,
   MessageCircle,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getAdminRole } from "./admin/adminTypes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -321,6 +323,7 @@ const CourseMap = () => {
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -332,6 +335,7 @@ const CourseMap = () => {
           session.user.email?.split("@")[0] ??
           "U";
         setDisplayName(name);
+        setIsAdmin(!!getAdminRole(session.user as any));
       })
       .catch(() => {
         navigate("/auth");
@@ -513,6 +517,34 @@ const CourseMap = () => {
               {totalXp}
             </span>
           </div>
+
+          {/* Admin switch */}
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                background: "white",
+                border: "1.5px solid #E8E0D5",
+                borderRadius: 999,
+                padding: "6px 12px",
+                cursor: "pointer",
+                color: "#1E2D3D",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 12,
+                fontWeight: 600,
+                transition: "background 150ms ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#FFF8E1")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
+              aria-label="Open admin panel"
+            >
+              <Shield size={13} style={{ color: "#C17B4A" }} />
+              Admin
+            </button>
+          )}
 
           {/* Sign out */}
           <button

@@ -150,7 +150,7 @@ function NewCourseDialog({ languageId }: { languageId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <span><IconBtn title="New course"><Plus size={14} /></IconBtn></span>
+        <TriggerIconBtn title="New course"><Plus size={14} /></TriggerIconBtn>
       </DialogTrigger>
       <DialogContent style={{ backgroundColor: "#FAF6F0", border: "1.5px solid #E8E0D5" }}>
         <DialogHeader>
@@ -203,7 +203,7 @@ function NewUnitDialog({ courseId }: { courseId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <span><IconBtn title="New unit"><Plus size={14} /></IconBtn></span>
+        <TriggerIconBtn title="New unit"><Plus size={14} /></TriggerIconBtn>
       </DialogTrigger>
       <DialogContent style={{ backgroundColor: "#FAF6F0", border: "1.5px solid #E8E0D5" }}>
         <DialogHeader>
@@ -439,7 +439,7 @@ function UnitRow({
               {publishingUnit ? "…" : isPublished ? "Unpublish" : "Publish"}
             </button>
             <DeleteConfirmDialog
-              trigger={<span><IconBtn title="Delete unit"><Trash2 size={12} /></IconBtn></span>}
+              trigger={<TriggerIconBtn title="Delete unit"><Trash2 size={12} /></TriggerIconBtn>}
               itemLabel={unit.title}
               onConfirm={async () => {
                 await deleteUnit(unit.id);
@@ -482,7 +482,7 @@ function CourseRows({
               <>
                 <NewUnitDialog courseId={course.id} />
                 <DeleteConfirmDialog
-                  trigger={<span><IconBtn title="Delete course"><Trash2 size={12} /></IconBtn></span>}
+                  trigger={<TriggerIconBtn title="Delete course"><Trash2 size={12} /></TriggerIconBtn>}
                   itemLabel={course.title}
                   onConfirm={async () => {
                     await deleteCourse(course.id);
@@ -565,7 +565,7 @@ export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, select
                 <>
                   <NewCourseDialog languageId={lang.id} />
                   <DeleteConfirmDialog
-                    trigger={<span><IconBtn title="Delete language"><Trash2 size={12} /></IconBtn></span>}
+                    trigger={<TriggerIconBtn title="Delete language"><Trash2 size={12} /></TriggerIconBtn>}
                     itemLabel={lang.name}
                     onConfirm={async () => {
                       await deleteLanguage(lang.id);

@@ -40,6 +40,8 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
   const offDataRef = useRef<Uint8ClampedArray | null>(null);
   const visitedRef = useRef<Uint8Array>(new Uint8Array(SIZE * SIZE));
   const totalPixels = useRef(0);
+  // Each entry is the list of pixel indices belonging to one connected component (body, dots, etc.)
+  const componentsRef = useRef<number[][]>([]);
   const isDrawing = useRef(false);
 
   // Multi-stroke management (normalized 0-1 coordinates)
@@ -76,6 +78,7 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     undoneStack.current = [];
     currStroke.current = [];
     visitedRef.current = new Uint8Array(SIZE * SIZE);
+    componentsRef.current = [];
     initCanvas();
   }, [content.letter]);
 
@@ -106,6 +109,34 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
       if (imageData.data[i] > 64) count++;
     }
     totalPixels.current = count;
+
+    // Split the letter into connected components so we can require every part
+    // (body + each dot) to be traced — not just a global pixel-count threshold
+    componentsRef.current = computeComponents(imageData.data);
+  };
+
+  // BFS flood-fill to find connected components of letter pixels
+  const computeComponents = (data: Uint8ClampedArray): number[][] => {
+    const visited = new Uint8Array(SIZE * SIZE);
+    const result: number[][] = [];
+    for (let start = 0; start < SIZE * SIZE; start++) {
+      if (data[start * 4 + 3] <= 64 || visited[start]) continue;
+      const pixels: number[] = [];
+      const queue: number[] = [start];
+      visited[start] = 1;
+      let head = 0;
+      while (head < queue.length) {
+        const idx = queue[head++];
+        pixels.push(idx);
+        const x = idx % SIZE, y = Math.floor(idx / SIZE);
+        if (x > 0       && !visited[idx - 1]    && data[(idx - 1)    * 4 + 3] > 64) { visited[idx - 1]    = 1; queue.push(idx - 1); }
+        if (x < SIZE-1  && !visited[idx + 1]    && data[(idx + 1)    * 4 + 3] > 64) { visited[idx + 1]    = 1; queue.push(idx + 1); }
+        if (y > 0       && !visited[idx - SIZE]  && data[(idx - SIZE)  * 4 + 3] > 64) { visited[idx - SIZE]  = 1; queue.push(idx - SIZE); }
+        if (y < SIZE-1  && !visited[idx + SIZE]  && data[(idx + SIZE)  * 4 + 3] > 64) { visited[idx + SIZE]  = 1; queue.push(idx + SIZE); }
+      }
+      if (pixels.length >= 20) result.push(pixels); // skip tiny rendering artifacts
+    }
+    return result;
   };
 
   // ── Canvas helpers ───────────────────────────────────────────
@@ -174,13 +205,32 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     }
   };
 
-  const calcCoverage = (): number => {
+  // Overall coverage — used for the live progress % shown to the user
+  const calcDisplayCoverage = (): number => {
     if (totalPixels.current === 0) return 0;
     let n = 0;
     for (let i = 0; i < visitedRef.current.length; i++) {
       if (visitedRef.current[i]) n++;
     }
     return n / totalPixels.current;
+  };
+
+  // Per-component coverage — used for pass/fail.
+  // Returns the LOWEST coverage fraction across all components (body, dots, etc.)
+  // so the user must trace every part of the letter, not just the main body.
+  const calcCoverage = (): number => {
+    const components = componentsRef.current;
+    if (components.length === 0) return calcDisplayCoverage(); // fallback for no-component case
+    let minCov = 1;
+    for (const pixels of components) {
+      let covered = 0;
+      for (const idx of pixels) {
+        if (visitedRef.current[idx]) covered++;
+      }
+      const cov = covered / pixels.length;
+      if (cov < minCov) minCov = cov;
+    }
+    return minCov;
   };
 
   // ── Pointer position ─────────────────────────────────────────
@@ -233,8 +283,8 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     undoneStack.current = [];
     setStrokeCount((c) => c + 1);
     setUndoneCount(0);
-    // Update live coverage preview (coverage-mode only)
-    if (!hasReference) setPct(calcCoverage());
+    // Update live coverage preview (coverage-mode only) — show overall %, not per-component min
+    if (!hasReference) setPct(calcDisplayCoverage());
   };
 
   // ── Stroke controls ──────────────────────────────────────────
@@ -249,7 +299,7 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     const newCount = allStrokes.current.length;
     setStrokeCount(newCount);
     setUndoneCount(undoneStack.current.length);
-    setPct(hasReference ? 0 : calcCoverage());
+    setPct(hasReference ? 0 : calcDisplayCoverage());
   };
 
   const handleRedo = () => {
@@ -261,7 +311,7 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     rebuildCanvas();
     setStrokeCount(allStrokes.current.length);
     setUndoneCount(undoneStack.current.length);
-    setPct(hasReference ? 0 : calcCoverage());
+    setPct(hasReference ? 0 : calcDisplayCoverage());
   };
 
   const handleClear = () => {
@@ -301,9 +351,12 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
         setTimeout(() => setNotQuite(false), 2000);
       }
     } else {
-      const cov = calcCoverage();
-      setPct(cov);
-      if (cov >= COVERAGE_THRESHOLD) {
+      // Show overall % to user but use per-component minimum to decide pass/fail
+      // This forces the user to trace every part (body + all dots), not just the bulk
+      const displayCov = calcDisplayCoverage();
+      const passCov = calcCoverage();
+      setPct(displayCov);
+      if (passCov >= COVERAGE_THRESHOLD) {
         setDone(true);
         onAnswer(true);
       } else {

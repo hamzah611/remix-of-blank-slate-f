@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,6 +44,26 @@ function IconBtn({ onClick, children, title }: { onClick?: () => void; children:
     </button>
   );
 }
+
+// For use as a Radix Dialog/AlertDialog trigger via asChild — must forward
+// props/ref and must NOT stopPropagation (Radix needs the click).
+const TriggerIconBtn = React.forwardRef<
+  HTMLButtonElement,
+  { children: React.ReactNode; title?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ children, title, onClick, ...props }, ref) => (
+  <button
+    ref={ref}
+    type="button"
+    title={title}
+    onClick={(e) => { e.stopPropagation(); onClick?.(e); }}
+    className="p-1 rounded opacity-40 hover:opacity-100 transition-opacity"
+    style={{ color: "#1E2D3D", background: "none", border: "none", cursor: "pointer" }}
+    {...props}
+  >
+    {children}
+  </button>
+));
+TriggerIconBtn.displayName = "TriggerIconBtn";
 
 // ── Dialogs ────────────────────────────────────────────────
 
@@ -130,7 +150,7 @@ function NewCourseDialog({ languageId }: { languageId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <span><IconBtn title="New course"><Plus size={14} /></IconBtn></span>
+        <TriggerIconBtn title="New course"><Plus size={14} /></TriggerIconBtn>
       </DialogTrigger>
       <DialogContent style={{ backgroundColor: "#FAF6F0", border: "1.5px solid #E8E0D5" }}>
         <DialogHeader>
@@ -183,7 +203,7 @@ function NewUnitDialog({ courseId }: { courseId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <span><IconBtn title="New unit"><Plus size={14} /></IconBtn></span>
+        <TriggerIconBtn title="New unit"><Plus size={14} /></TriggerIconBtn>
       </DialogTrigger>
       <DialogContent style={{ backgroundColor: "#FAF6F0", border: "1.5px solid #E8E0D5" }}>
         <DialogHeader>
@@ -419,7 +439,7 @@ function UnitRow({
               {publishingUnit ? "…" : isPublished ? "Unpublish" : "Publish"}
             </button>
             <DeleteConfirmDialog
-              trigger={<span><IconBtn title="Delete unit"><Trash2 size={12} /></IconBtn></span>}
+              trigger={<TriggerIconBtn title="Delete unit"><Trash2 size={12} /></TriggerIconBtn>}
               itemLabel={unit.title}
               onConfirm={async () => {
                 await deleteUnit(unit.id);
@@ -462,7 +482,7 @@ function CourseRows({
               <>
                 <NewUnitDialog courseId={course.id} />
                 <DeleteConfirmDialog
-                  trigger={<span><IconBtn title="Delete course"><Trash2 size={12} /></IconBtn></span>}
+                  trigger={<TriggerIconBtn title="Delete course"><Trash2 size={12} /></TriggerIconBtn>}
                   itemLabel={course.title}
                   onConfirm={async () => {
                     await deleteCourse(course.id);
@@ -545,7 +565,7 @@ export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, select
                 <>
                   <NewCourseDialog languageId={lang.id} />
                   <DeleteConfirmDialog
-                    trigger={<span><IconBtn title="Delete language"><Trash2 size={12} /></IconBtn></span>}
+                    trigger={<TriggerIconBtn title="Delete language"><Trash2 size={12} /></TriggerIconBtn>}
                     itemLabel={lang.name}
                     onConfirm={async () => {
                       await deleteLanguage(lang.id);

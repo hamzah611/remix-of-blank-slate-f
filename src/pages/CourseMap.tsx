@@ -323,6 +323,7 @@ const CourseMap = () => {
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -334,6 +335,7 @@ const CourseMap = () => {
           session.user.email?.split("@")[0] ??
           "U";
         setDisplayName(name);
+        setIsAdmin(!!getAdminRole(session.user as any));
       })
       .catch(() => {
         navigate("/auth");

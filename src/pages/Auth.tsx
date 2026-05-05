@@ -427,10 +427,7 @@ const Auth = () => {
       </div>
 
       {/* ── Right panel (form) ── */}
-      <div
-        className="flex-1 flex flex-col items-center justify-center"
-        style={{ padding: "64px 24px", backgroundColor: "#FFFFFF" }}
-      >
+      <div className="flex-1 gf-auth-form-wrap">
         {formPanel}
       </div>
     </div>

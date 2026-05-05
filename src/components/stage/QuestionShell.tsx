@@ -206,14 +206,7 @@ export function QuestionShell({
       {/* ── Question content — remounts with key so animation re-fires each question ── */}
       <div
         key={`${question.id}-${retryCount}`}
-        className="animate-question-enter"
-        style={{
-          flex: 1,
-          padding: "32px 20px",
-          maxWidth: 680,
-          width: "100%",
-          margin: "0 auto",
-        }}
+        className="animate-question-enter gf-question-content"
       >
         <QuestionRenderer
           question={question}

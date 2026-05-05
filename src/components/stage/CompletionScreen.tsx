@@ -15,8 +15,8 @@ export function CompletionScreen({
 
   return (
     <div
-      className="flex flex-col items-center justify-center min-h-screen"
-      style={{ backgroundColor: "#FAF6F0", padding: "32px 24px", overflowX: "hidden" }}
+      className="flex flex-col items-center justify-center min-h-screen gf-completion-wrap"
+      style={{ backgroundColor: "#FAF6F0", overflowX: "hidden" }}
     >
       {/* ── Star rating ── */}
       <div className="flex items-end gap-3 mb-8">

@@ -204,7 +204,7 @@ const Index = () => {
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section style={{ position: "relative", backgroundColor: "#1E2D3D", overflow: "hidden", padding: "108px 24px 100px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+      <section className="gf-hero-section">
         <FloatingScript />
 
         {/* Subtle gold radial glow */}
@@ -265,7 +265,7 @@ const Index = () => {
             A different kind of language app
           </h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))", gap: 20 }}>
+        <div className="gf-features-grid">
           {FEATURES.map((f, i) => (
             <div
               key={i}
@@ -344,7 +344,7 @@ const Index = () => {
           Both share the same Nastaliq script — pick the one closest to you.
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+        <div className="gf-lang-grid">
           {LANGUAGES.map((lang) => {
             const sel = selected === lang.id;
             return (

@@ -197,12 +197,12 @@ function UnitCard({
       className="gf-card"
       style={{
         borderRadius: 16,
-        padding: "24px",
         opacity: isUnitLocked ? 0.6 : 1,
         transition: "opacity 200ms ease",
         position: "relative",
       }}
     >
+      <div className="gf-unit-card-inner">
       {/* Lock badge */}
       {isUnitLocked && (
         <div
@@ -306,6 +306,7 @@ function UnitCard({
           );
         })}
       </div>
+      </div>{/* /gf-unit-card-inner */}
     </div>
   );
 }
@@ -500,30 +501,18 @@ const CourseMap = () => {
         </div>
 
         {/* Stats + avatar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* Streak */}
-          <div
-            style={{
-              display: "flex", alignItems: "center", gap: 4,
-              background: "rgba(193,123,74,0.08)", borderRadius: 99,
-              padding: "5px 10px",
-            }}
-          >
-            <Flame size={15} style={{ color: "#C17B4A" }} />
+          <div className="gf-nav-stat" style={{ background: "rgba(193,123,74,0.08)" }}>
+            <Flame size={14} style={{ color: "#C17B4A", flexShrink: 0 }} />
             <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, fontWeight: 700, color: "#C17B4A" }}>
               {streak}
             </span>
           </div>
 
           {/* XP */}
-          <div
-            style={{
-              display: "flex", alignItems: "center", gap: 4,
-              background: "rgba(212,168,83,0.1)", borderRadius: 99,
-              padding: "5px 10px",
-            }}
-          >
-            <XpCoin size={15} />
+          <div className="gf-nav-stat" style={{ background: "rgba(212,168,83,0.1)" }}>
+            <XpCoin size={14} />
             <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, fontWeight: 700, color: "#C49840" }}>
               {totalXp}
             </span>
@@ -574,10 +563,7 @@ const CourseMap = () => {
       </nav>
 
       {/* ── Page content ── */}
-      <div
-        className="animate-page-entry"
-        style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px 80px" }}
-      >
+      <div className="animate-page-entry gf-course-page-content">
 
         {/* Page heading */}
         <div className="animate-slide-up delay-50" style={{ marginBottom: 32 }}>

@@ -447,9 +447,161 @@
 .delay-700 { animation-delay: 700ms; }
 .delay-800 { animation-delay: 800ms; }
 
-/* ── Nav: hide admin label text on small phones ──────────── */
+/* ── Mobile-first responsive overrides ──────────────────── */
 
 @media (max-width: 480px) {
+  /* Nav */
   .gf-nav-admin-text { display: none; }
-  .gf-nav { padding: 0 16px; }
+  .gf-nav { height: 56px; padding: 0 16px; }
+
+  /* Wordmark — slightly smaller */
+  .gf-wordmark-script { font-size: 20px; }
+  .gf-wordmark-latin  { font-size: 14px; }
+
+  /* Stage circles — smaller so 6 fit without crowding */
+  .gf-stage-btn { width: 44px; height: 44px; }
+  .gf-stage-btn.current::after { inset: -4px; }
+
+  /* Answer / option buttons — bigger touch target, less horizontal indent */
+  .gf-answer-btn {
+    min-height: 64px;
+    padding: 14px 16px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+
+  /* Primary + secondary — tighter radius, slightly shorter */
+  .gf-btn-primary   { height: 54px; font-size: 16px; border-radius: 12px; }
+  .gf-btn-secondary { height: 52px; font-size: 14px; border-radius: 11px; }
+
+  /* Inputs */
+  .gf-input { height: 52px; font-size: 16px; border-radius: 10px; }
+
+  /* Cards */
+  .gf-card { border-radius: 14px; }
+
+  /* Label / section caps */
+  .gf-label { font-size: 10px; }
+
+  /* Progress bar — slightly thinner on small screens */
+  .gf-progress-track { height: 6px; }
+}
+
+/* ── Nav stat badges ─────────────────────────────────────── */
+
+.gf-nav-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 99px;
+  padding: 5px 10px;
+}
+
+@media (max-width: 480px) {
+  .gf-nav-stat { padding: 4px 8px; }
+  .gf-nav-stat span { font-size: 12px; }
+  .gf-avatar { width: 30px; height: 30px; font-size: 11px; }
+}
+
+/* ── Course map page ─────────────────────────────────────── */
+
+.gf-course-page-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px 72px;
+}
+
+@media (max-width: 480px) {
+  .gf-course-page-content { padding: 20px 14px 64px; }
+}
+
+.gf-unit-card-inner {
+  padding: 22px;
+}
+
+@media (max-width: 480px) {
+  .gf-unit-card-inner { padding: 16px 14px; }
+}
+
+/* ── Question shell content area ─────────────────────────── */
+
+.gf-question-content {
+  flex: 1;
+  padding: 28px 20px;
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 480px) {
+  .gf-question-content { padding: 18px 14px; }
+}
+
+/* ── Auth page form panel ────────────────────────────────── */
+
+.gf-auth-form-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background-color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .gf-auth-form-wrap { padding: 32px 20px 40px; justify-content: flex-start; padding-top: 36px; }
+}
+
+/* ── Landing hero section ────────────────────────────────── */
+
+.gf-hero-section {
+  position: relative;
+  background-color: #1E2D3D;
+  overflow: hidden;
+  padding: 108px 24px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .gf-hero-section { padding: 72px 20px 80px; }
+}
+
+/* ── Landing features grid ───────────────────────────────── */
+
+.gf-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 480px) {
+  .gf-features-grid { grid-template-columns: 1fr; gap: 14px; }
+}
+
+/* ── Landing language cards grid ─────────────────────────── */
+
+.gf-lang-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 360px) {
+  .gf-lang-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Completion screen ───────────────────────────────────── */
+
+.gf-completion-wrap {
+  padding: 32px 20px;
+  overflow-x: hidden;
+}
+
+@media (max-width: 480px) {
+  .gf-completion-wrap { padding: 24px 16px; }
 }

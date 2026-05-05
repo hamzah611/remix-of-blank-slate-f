@@ -171,6 +171,7 @@ function UnitCard({
   completedStageIds,
   firstAvailableStageId,
   isUnitLocked,
+  isPlanLocked,
   onStageClick,
 }: {
   unit: Unit;
@@ -179,6 +180,7 @@ function UnitCard({
   completedStageIds: Set<string>;
   firstAvailableStageId: string | null;
   isUnitLocked: boolean;
+  isPlanLocked: boolean;
   onStageClick: (stageId: string, state: StageState) => void;
 }) {
   const completedCount = stages.filter((s) => completedStageIds.has(s.id)).length;
@@ -211,23 +213,23 @@ function UnitCard({
             display: "flex",
             alignItems: "center",
             gap: 4,
-            backgroundColor: "rgba(30,45,61,0.06)",
+            backgroundColor: isPlanLocked ? "rgba(212,168,83,0.12)" : "rgba(30,45,61,0.06)",
             borderRadius: 99,
             padding: "4px 10px",
           }}
         >
-          <Lock size={10} color="rgba(30,45,61,0.3)" strokeWidth={2.5} />
+          <Lock size={10} color={isPlanLocked ? "#C17B4A" : "rgba(30,45,61,0.3)"} strokeWidth={2.5} />
           <span
             style={{
               fontSize: 10,
               fontWeight: 600,
-              color: "rgba(30,45,61,0.35)",
+              color: isPlanLocked ? "#C17B4A" : "rgba(30,45,61,0.35)",
               fontFamily: "'Inter', system-ui, sans-serif",
               letterSpacing: "0.06em",
               textTransform: "uppercase",
             }}
           >
-            Locked
+            {isPlanLocked ? "Premium" : "Locked"}
           </span>
         </div>
       )}
@@ -324,6 +326,7 @@ const CourseMap = () => {
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [userPlan, setUserPlan] = useState<"free" | "premium">("free");
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -432,11 +435,18 @@ const CourseMap = () => {
         .eq("user_id", uid)
         .maybeSingle();
 
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("user_id", uid)
+        .maybeSingle();
+
       setUnits(normalizedUnits);
       setStagesByUnit(grouped);
       setCompletedStageIds(completed);
       setTotalXp((xpData as any)?.total_xp ?? 0);
       setStreak((streakData as any)?.current_streak ?? 0);
+      setUserPlan(((profileData as any)?.plan ?? "free") as "free" | "premium");
     } catch (err) {
       console.error("CourseMap loadAll failed:", err);
       setUsingFallback(true);
@@ -457,6 +467,9 @@ const CourseMap = () => {
 
   const isUnitLocked = (unitIdx: number): boolean => {
     if (unitIdx === 0) return false;
+    // Free plan: all units after the first are locked
+    if (userPlan === "free") return true;
+    // Premium: locked until previous unit is complete
     const prevUnit = units[unitIdx - 1];
     if (!prevUnit) return true;
     const prevStages = stagesByUnit[prevUnit.id] ?? [];
@@ -672,6 +685,8 @@ const CourseMap = () => {
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {units.map((unit, unitIdx) => {
               const stages = stagesByUnit[unit.id] ?? [];
+              const locked = isUnitLocked(unitIdx);
+              const planLocked = unitIdx > 0 && userPlan === "free";
               return (
                 <div
                   key={unit.id}
@@ -684,7 +699,8 @@ const CourseMap = () => {
                     stages={stages}
                     completedStageIds={completedStageIds}
                     firstAvailableStageId={firstAvailableStageId}
-                    isUnitLocked={isUnitLocked(unitIdx)}
+                    isUnitLocked={locked}
+                    isPlanLocked={planLocked}
                     onStageClick={handleStageClick}
                   />
                 </div>

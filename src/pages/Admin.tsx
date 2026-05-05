@@ -5,6 +5,7 @@ import { AdminSidebar } from "./admin/AdminSidebar";
 import { QuestionEditor } from "./admin/QuestionEditor";
 import { AdminUsers } from "./admin/AdminUsers";
 import { AdminAnalytics } from "./admin/AdminAnalytics";
+import { AdminApprovals } from "./admin/AdminApprovals";
 import type { StageType, AdminRole } from "./admin/adminTypes";
 import { STAGE_LABELS, getAdminRole } from "./admin/adminTypes";
 
@@ -16,7 +17,7 @@ export default function Admin() {
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
   const [selectedStageType, setSelectedStageType] = useState<StageType | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-  const [selectedView, setSelectedView] = useState<"stage" | "adminUsers" | "analytics">("stage");
+  const [selectedView, setSelectedView] = useState<"stage" | "adminUsers" | "analytics" | "approvals">("stage");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -41,9 +42,9 @@ export default function Admin() {
     setSelectedView("stage");
   };
 
-  const handleSelectView = (view: "stage" | "adminUsers" | "analytics") => {
+  const handleSelectView = (view: "stage" | "adminUsers" | "analytics" | "approvals") => {
     setSelectedView(view);
-    if (view === "adminUsers" || view === "analytics") {
+    if (view === "adminUsers" || view === "analytics" || view === "approvals") {
       setSelectedStageId(null);
       setSelectedStageType(null);
     }
@@ -90,13 +91,15 @@ export default function Admin() {
           selectedStageId={selectedStageId}
           onSelectStage={handleSelectStage}
           adminRole={adminRole}
-          selectedView={selectedView}
-          onSelectView={handleSelectView}
+          selectedView={selectedView as any}
+          onSelectView={handleSelectView as any}
         />
 
         {/* Main content */}
         <div className="flex-1 overflow-y-auto p-8" style={{ backgroundColor: "#FAF6F0" }}>
-          {selectedView === "analytics" ? (
+          {selectedView === "approvals" ? (
+            <AdminApprovals />
+          ) : selectedView === "analytics" ? (
             <AdminAnalytics />
           ) : selectedView === "adminUsers" ? (
             <AdminUsers currentUserId={currentUserId} currentRole={adminRole} />

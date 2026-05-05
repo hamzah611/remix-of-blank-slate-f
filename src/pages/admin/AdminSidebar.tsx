@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ChevronRight, ChevronDown, Plus, Trash2, AlertTriangle, Users, BarChart2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Trash2, AlertTriangle, Users, BarChart2, Crown } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -535,8 +535,8 @@ interface Props {
   selectedStageId: string | null;
   onSelectStage: (stageId: string, stageType: StageType, unitId?: string) => void;
   adminRole: AdminRole;
-  selectedView: "stage" | "adminUsers" | "analytics";
-  onSelectView: (view: "stage" | "adminUsers" | "analytics") => void;
+  selectedView: "stage" | "adminUsers" | "analytics" | "approvals";
+  onSelectView: (view: "stage" | "adminUsers" | "analytics" | "approvals") => void;
 }
 
 export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, selectedView, onSelectView }: Props) {
@@ -587,7 +587,7 @@ export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, select
         )}
       </ScrollArea>
 
-      {/* Bottom nav — Analytics (both roles) + Admin Users (super_admin only) */}
+      {/* Bottom nav — Analytics (both roles) + super_admin-only tools */}
       <div style={{ borderTop: "1px solid #E8E0D5", padding: "8px", display: "flex", flexDirection: "column", gap: 2 }}>
         <button
           onClick={() => onSelectView(selectedView === "analytics" ? "stage" : "analytics")}
@@ -604,20 +604,36 @@ export function AdminSidebar({ selectedStageId, onSelectStage, adminRole, select
           Analytics
         </button>
         {adminRole === "super_admin" && (
-          <button
-            onClick={() => onSelectView(selectedView === "adminUsers" ? "stage" : "adminUsers")}
-            className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm transition-colors"
-            style={{
-              backgroundColor: selectedView === "adminUsers" ? "#1E2D3D" : "transparent",
-              color: selectedView === "adminUsers" ? "#FAF6F0" : "#1E2D3D",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 500,
-            }}
-          >
-            <Users size={14} />
-            Admin Users
-          </button>
+          <>
+            <button
+              onClick={() => onSelectView(selectedView === "approvals" ? "stage" : "approvals")}
+              className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm transition-colors"
+              style={{
+                backgroundColor: selectedView === "approvals" ? "#D4A853" : "transparent",
+                color: selectedView === "approvals" ? "#FFFFFF" : "#1E2D3D",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+            >
+              <Crown size={14} />
+              Approvals
+            </button>
+            <button
+              onClick={() => onSelectView(selectedView === "adminUsers" ? "stage" : "adminUsers")}
+              className="flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm transition-colors"
+              style={{
+                backgroundColor: selectedView === "adminUsers" ? "#1E2D3D" : "transparent",
+                color: selectedView === "adminUsers" ? "#FAF6F0" : "#1E2D3D",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+            >
+              <Users size={14} />
+              Admin Users
+            </button>
+          </>
         )}
       </div>
     </div>

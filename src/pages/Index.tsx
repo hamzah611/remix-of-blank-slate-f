@@ -55,22 +55,55 @@ const STEPS = [
 // ─── Components ───────────────────────────────────────────────────────────────
 
 function FloatingScript() {
-  const letters = ["ا", "ب", "ت", "ث", "ج", "ح", "خ", "د"];
+  // 28 letters with fully hand-tuned positions, sizes, rotations and opacities
+  // so they feel truly scattered — no two in the same region
+  const items = [
+    { ch: "ا", top:  4, left:  3,  size: 88,  rot: -8,  op: 0.055 },
+    { ch: "ب", top:  7, left: 82,  size: 52,  rot: 14,  op: 0.038 },
+    { ch: "ت", top: 13, left: 44,  size: 120, rot: -20, op: 0.030 },
+    { ch: "ث", top: 18, left: 67,  size: 44,  rot:  6,  op: 0.050 },
+    { ch: "ج", top: 23, left: 18,  size: 72,  rot: -14, op: 0.042 },
+    { ch: "ح", top: 28, left: 91,  size: 60,  rot: 18,  op: 0.033 },
+    { ch: "خ", top: 35, left:  8,  size: 48,  rot:  9,  op: 0.048 },
+    { ch: "د", top: 38, left: 56,  size: 100, rot: -6,  op: 0.025 },
+    { ch: "ذ", top: 44, left: 30,  size: 56,  rot: 22,  op: 0.040 },
+    { ch: "ر", top: 50, left: 76,  size: 80,  rot: -18, op: 0.035 },
+    { ch: "ز", top: 55, left:  2,  size: 40,  rot: 12,  op: 0.052 },
+    { ch: "س", top: 60, left: 88,  size: 64,  rot: -10, op: 0.030 },
+    { ch: "ش", top: 65, left: 22,  size: 96,  rot:  5,  op: 0.028 },
+    { ch: "ص", top: 70, left: 50,  size: 44,  rot: -24, op: 0.045 },
+    { ch: "ض", top: 75, left: 10,  size: 76,  rot: 16,  op: 0.036 },
+    { ch: "ط", top: 80, left: 70,  size: 52,  rot: -7,  op: 0.042 },
+    { ch: "ع", top: 85, left: 38,  size: 108, rot:  11, op: 0.022 },
+    { ch: "غ", top: 90, left: 85,  size: 46,  rot: -15, op: 0.050 },
+    { ch: "ف", top: 93, left:  6,  size: 60,  rot:  20, op: 0.038 },
+    { ch: "ق", top: 10, left: 58,  size: 38,  rot: -5,  op: 0.055 },
+    { ch: "ک", top: 32, left: 40,  size: 84,  rot:  8,  op: 0.028 },
+    { ch: "گ", top: 47, left: 62,  size: 50,  rot: -19, op: 0.044 },
+    { ch: "ل", top: 58, left: 15,  size: 116, rot:  3,  op: 0.020 },
+    { ch: "م", top: 72, left: 94,  size: 42,  rot: -12, op: 0.048 },
+    { ch: "ن", top: 20, left: 96,  size: 68,  rot: 17,  op: 0.033 },
+    { ch: "و", top: 42, left: 75,  size: 54,  rot: -9,  op: 0.040 },
+    { ch: "ہ", top: 82, left: 52,  size: 90,  rot:  13, op: 0.026 },
+    { ch: "ی", top: 96, left: 28,  size: 46,  rot: -22, op: 0.050 },
+  ];
+
   return (
     <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
-      {letters.map((ch, i) => (
+      {items.map((item, i) => (
         <span key={i} style={{
           position: "absolute",
           fontFamily: "'Amiri', serif",
-          fontSize: `${52 + (i % 3) * 34}px`,
+          fontSize: `${item.size}px`,
           color: "#FFFFFF",
-          opacity: 0.035 + (i % 4) * 0.012,
-          top: `${8 + ((i * 137) % 80)}%`,
-          left: `${5 + ((i * 97) % 90)}%`,
-          transform: `rotate(${-12 + (i % 5) * 8}deg)`,
+          opacity: item.op,
+          top: `${item.top}%`,
+          left: `${item.left}%`,
+          transform: `rotate(${item.rot}deg)`,
           userSelect: "none",
           direction: "rtl",
-        }}>{ch}</span>
+          lineHeight: 1,
+        }}>{item.ch}</span>
       ))}
     </div>
   );

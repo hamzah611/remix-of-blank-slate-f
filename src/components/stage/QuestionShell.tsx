@@ -203,18 +203,19 @@ export function QuestionShell({
         </div>
       </div>
 
-      {/* ── Question content ── */}
+      {/* ── Question content — remounts with key so animation re-fires each question ── */}
       <div
+        key={`${question.id}-${retryCount}`}
+        className="animate-question-enter"
         style={{
           flex: 1,
-          padding: "32px 24px",
-          maxWidth: 720,
+          padding: "32px 20px",
+          maxWidth: 680,
           width: "100%",
           margin: "0 auto",
         }}
       >
         <QuestionRenderer
-          key={`${question.id}-${retryCount}`}
           question={question}
           onAnswer={handleAnswer}
           feedback={feedback}
@@ -229,9 +230,11 @@ export function QuestionShell({
             position: "sticky",
             bottom: 0,
             backgroundColor: feedback === "correct" ? "#D4A853" : "#C17B4A",
-            padding: "20px 24px 36px",
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
+            padding: "20px 24px",
+            paddingBottom: "max(36px, env(safe-area-inset-bottom, 36px))",
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
+            boxShadow: "0 -4px 32px rgba(0,0,0,0.12)",
           }}
         >
           <div style={{ maxWidth: 720, margin: "0 auto" }}>
@@ -244,16 +247,18 @@ export function QuestionShell({
               }}
             >
               <div
+                className={feedback === "correct" ? "animate-correct-pulse" : "animate-wrong-shake"}
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   borderRadius: "50%",
-                  backgroundColor: "rgba(255,255,255,0.25)",
+                  backgroundColor: "rgba(255,255,255,0.28)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
-                  fontSize: 18,
+                  fontSize: 20,
+                  fontWeight: 700,
                 }}
               >
                 {feedback === "correct" ? "✓" : "✗"}

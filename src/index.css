@@ -147,14 +147,18 @@
   font-size: 17px;
   font-weight: 700;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: background 150ms ease, transform 80ms ease;
+  transition: background 200ms ease, transform 80ms ease, box-shadow 200ms ease;
   letter-spacing: -0.01em;
+  box-shadow: 0 2px 12px rgba(107, 163, 200, 0.3);
 }
-.gf-btn-primary:hover:not(:disabled) { background: #1E2D3D; }
+.gf-btn-primary:hover:not(:disabled) {
+  background: #1E2D3D;
+  box-shadow: 0 4px 20px rgba(30, 45, 61, 0.2);
+}
 .gf-btn-primary:active:not(:disabled) { transform: scale(0.97); }
-.gf-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.gf-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 .gf-btn-primary:focus-visible { outline: 2px solid #6BA3C8; outline-offset: 2px; }
 
 /* ── Secondary / outline button ─────────────────────────── */
@@ -219,27 +223,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  transition: transform 150ms ease;
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms ease;
   flex-shrink: 0;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
 }
-.gf-stage-btn:hover:not(:disabled) { transform: translateY(-2px); }
-.gf-stage-btn:active:not(:disabled) { transform: scale(0.95); }
-.gf-stage-btn:disabled { cursor: default; }
+.gf-stage-btn:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.14);
+}
+.gf-stage-btn:active:not(:disabled) { transform: scale(0.93); box-shadow: none; }
+.gf-stage-btn:disabled { cursor: default; box-shadow: none; }
 
-/* Gold ring for current stage */
+/* Glowing gold ring for current stage */
 .gf-stage-btn.current::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -5px;
   border-radius: 50%;
-  border: 2px solid #D4A853;
+  border: 2.5px solid #D4A853;
   pointer-events: none;
+  box-shadow: 0 0 0 3px rgba(212,168,83,0.18);
 }
 
 /* ── Answer option button ────────────────────────────────── */
@@ -248,23 +257,26 @@
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 56px;
-  padding: 14px 18px;
+  min-height: 60px;
+  padding: 16px 20px;
   background: #ffffff;
-  border: 1px solid rgba(30, 45, 61, 0.12);
-  border-radius: 8px;
+  border: 1.5px solid rgba(30, 45, 61, 0.10);
+  border-radius: 14px;
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 16px;
   color: #1E2D3D;
   text-align: left;
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease, transform 80ms ease;
+  transition: border-color 150ms ease, background-color 150ms ease, transform 100ms ease, box-shadow 150ms ease;
+  box-shadow: 0 1px 4px rgba(30,45,61,0.06);
 }
 .gf-answer-btn:hover:not(:disabled) {
-  background: rgba(30, 45, 61, 0.04);
-  border-color: rgba(30, 45, 61, 0.2);
+  background: rgba(30, 45, 61, 0.03);
+  border-color: rgba(30, 45, 61, 0.22);
+  box-shadow: 0 3px 12px rgba(30,45,61,0.10);
+  transform: translateY(-1px);
 }
-.gf-answer-btn:active:not(:disabled) { transform: scale(0.98); }
+.gf-answer-btn:active:not(:disabled) { transform: scale(0.98); box-shadow: none; }
 .gf-answer-btn.selected {
   border: 2px solid #6BA3C8;
   background: rgba(107, 163, 200, 0.06);
@@ -323,12 +335,14 @@
   top: 0;
   z-index: 10;
   height: 64px;
-  background: #FAF6F0;
+  background: rgba(250, 246, 240, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(30, 45, 61, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 20px;
 }
 
 /* ── Avatar circle ───────────────────────────────────────── */
@@ -377,4 +391,65 @@
   font-weight: 700;
   color: #1E2D3D;
   letter-spacing: -0.01em;
+}
+
+/* ── New keyframes ───────────────────────────────────────── */
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.45); }
+  65%  { transform: scale(1.14); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes xp-bounce {
+  0%   { opacity: 0; transform: scale(0.35) translateY(14px); }
+  55%  { transform: scale(1.18) translateY(-6px); }
+  75%  { transform: scale(0.95) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes question-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── New animation utilities ─────────────────────────────── */
+
+.animate-slide-up       { animation: slide-up       420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-pop-in         { animation: pop-in          460ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-xp-bounce      { animation: xp-bounce       560ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-question-enter { animation: question-enter  260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fade-up        { animation: fade-up          320ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── Animation delay helpers ─────────────────────────────── */
+
+.delay-50  { animation-delay:  50ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-250 { animation-delay: 250ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-350 { animation-delay: 350ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-550 { animation-delay: 550ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+.delay-800 { animation-delay: 800ms; }
+
+/* ── Nav: hide admin label text on small phones ──────────── */
+
+@media (max-width: 480px) {
+  .gf-nav-admin-text { display: none; }
+  .gf-nav { padding: 0 16px; }
 }

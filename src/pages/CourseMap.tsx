@@ -487,33 +487,31 @@ const CourseMap = () => {
         </div>
 
         {/* Stats + avatar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {/* Streak */}
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <Flame size={16} style={{ color: "#C17B4A" }} />
-            <span
-              style={{
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontSize: 14,
-                fontWeight: 700,
-                color: "#1E2D3D",
-              }}
-            >
+          <div
+            style={{
+              display: "flex", alignItems: "center", gap: 4,
+              background: "rgba(193,123,74,0.08)", borderRadius: 99,
+              padding: "5px 10px",
+            }}
+          >
+            <Flame size={15} style={{ color: "#C17B4A" }} />
+            <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, fontWeight: 700, color: "#C17B4A" }}>
               {streak}
             </span>
           </div>
 
           {/* XP */}
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <XpCoin size={17} />
-            <span
-              style={{
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontSize: 14,
-                fontWeight: 700,
-                color: "#D4A853",
-              }}
-            >
+          <div
+            style={{
+              display: "flex", alignItems: "center", gap: 4,
+              background: "rgba(212,168,83,0.1)", borderRadius: 99,
+              padding: "5px 10px",
+            }}
+          >
+            <XpCoin size={15} />
+            <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, fontWeight: 700, color: "#C49840" }}>
               {totalXp}
             </span>
           </div>
@@ -523,26 +521,20 @@ const CourseMap = () => {
             <button
               onClick={() => navigate("/admin")}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                background: "white",
-                border: "1.5px solid #E8E0D5",
-                borderRadius: 999,
-                padding: "6px 12px",
-                cursor: "pointer",
-                color: "#1E2D3D",
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontSize: 12,
-                fontWeight: 600,
-                transition: "background 150ms ease",
+                display: "flex", alignItems: "center", gap: 5,
+                background: "white", border: "1.5px solid #E8E0D5",
+                borderRadius: 999, padding: "6px 10px", cursor: "pointer",
+                color: "#1E2D3D", fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 12, fontWeight: 600,
+                transition: "background 150ms ease, box-shadow 150ms ease",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#FFF8E1")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#FFF8E1"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.10)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "white"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.06)"; }}
               aria-label="Open admin panel"
             >
               <Shield size={13} style={{ color: "#C17B4A" }} />
-              Admin
+              <span className="gf-nav-admin-text">Admin</span>
             </button>
           )}
 
@@ -550,18 +542,14 @@ const CourseMap = () => {
           <button
             onClick={handleLogout}
             style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "#1E2D3D",
-              opacity: 0.35,
-              padding: 4,
-              display: "flex",
-              alignItems: "center",
-              transition: "opacity 150ms ease",
+              background: "none", border: "none", cursor: "pointer",
+              color: "#1E2D3D", opacity: 0.35, padding: 6,
+              display: "flex", alignItems: "center",
+              borderRadius: 8,
+              transition: "opacity 150ms ease, background 150ms ease",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.35")}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.background = "rgba(30,45,61,0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.35"; e.currentTarget.style.background = "none"; }}
             aria-label="Sign out"
           >
             <LogOut size={16} />
@@ -579,14 +567,14 @@ const CourseMap = () => {
       >
 
         {/* Page heading */}
-        <div style={{ marginBottom: 32 }}>
+        <div className="animate-slide-up delay-50" style={{ marginBottom: 32 }}>
           <p className="gf-label" style={{ marginBottom: 8 }}>
             {language}
           </p>
           <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 40,
+              fontSize: "clamp(28px, 8vw, 40px)",
               fontWeight: 700,
               color: "#1E2D3D",
               letterSpacing: "-0.02em",
@@ -685,16 +673,21 @@ const CourseMap = () => {
             {units.map((unit, unitIdx) => {
               const stages = stagesByUnit[unit.id] ?? [];
               return (
-                <UnitCard
+                <div
                   key={unit.id}
-                  unit={unit}
-                  unitIdx={unitIdx}
-                  stages={stages}
-                  completedStageIds={completedStageIds}
-                  firstAvailableStageId={firstAvailableStageId}
-                  isUnitLocked={isUnitLocked(unitIdx)}
-                  onStageClick={handleStageClick}
-                />
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${100 + unitIdx * 80}ms` }}
+                >
+                  <UnitCard
+                    unit={unit}
+                    unitIdx={unitIdx}
+                    stages={stages}
+                    completedStageIds={completedStageIds}
+                    firstAvailableStageId={firstAvailableStageId}
+                    isUnitLocked={isUnitLocked(unitIdx)}
+                    onStageClick={handleStageClick}
+                  />
+                </div>
               );
             })}
           </div>

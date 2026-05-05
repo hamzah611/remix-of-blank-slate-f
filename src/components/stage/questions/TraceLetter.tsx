@@ -3,7 +3,7 @@ import type { QuestionProps } from "./shared";
 
 const SIZE = 260;
 const BRUSH_R = 10;
-const COVERAGE_THRESHOLD = 0.65;
+const COVERAGE_THRESHOLD = 0.72; // raised: each component AND each spatial region must reach this
 
 interface Point { x: number; y: number }
 
@@ -215,22 +215,65 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
     return n / totalPixels.current;
   };
 
-  // Per-component coverage — used for pass/fail.
-  // Returns the LOWEST coverage fraction across all components (body, dots, etc.)
-  // so the user must trace every part of the letter, not just the main body.
+  // Spatial spread within one component — divides its bounding box into a 3×3 grid
+  // and returns the LOWEST cell coverage. Forces the user to trace the full shape
+  // rather than just flooding one region (e.g. only the top half of a curved body).
+  const calcComponentSpread = (pixels: number[]): number => {
+    let minX = SIZE, maxX = 0, minY = SIZE, maxY = 0;
+    for (const idx of pixels) {
+      const x = idx % SIZE, y = Math.floor(idx / SIZE);
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+    const w = maxX - minX + 1, h = maxY - minY + 1;
+    // Tiny components (small dots) — skip the spread check, component coverage is enough
+    if (w <= 24 && h <= 24) return 1;
+
+    const GRID = 3;
+    const cellW = w / GRID, cellH = h / GRID;
+    const cellTotal = new Int32Array(GRID * GRID);
+    const cellHit   = new Int32Array(GRID * GRID);
+
+    for (const idx of pixels) {
+      const x = idx % SIZE, y = Math.floor(idx / SIZE);
+      const cx = Math.min(GRID - 1, Math.floor((x - minX) / cellW));
+      const cy = Math.min(GRID - 1, Math.floor((y - minY) / cellH));
+      const cell = cy * GRID + cx;
+      cellTotal[cell]++;
+      if (visitedRef.current[idx]) cellHit[cell]++;
+    }
+
+    const MIN_CELL_PIXELS = 20; // cells sparser than this are skipped (letter doesn't reach there)
+    let minCellCov = 1;
+    for (let i = 0; i < GRID * GRID; i++) {
+      if (cellTotal[i] < MIN_CELL_PIXELS) continue;
+      const cov = cellHit[i] / cellTotal[i];
+      if (cov < minCellCov) minCellCov = cov;
+    }
+    return minCellCov;
+  };
+
+  // Combined pass/fail score — returns the LOWEST score across:
+  //   • per-component coverage  (body + each dot must each be ≥ threshold)
+  //   • spatial spread per component  (every region of each part must be traced)
+  // A user who just scribbles randomly will fail one or both of these.
   const calcCoverage = (): number => {
     const components = componentsRef.current;
-    if (components.length === 0) return calcDisplayCoverage(); // fallback for no-component case
-    let minCov = 1;
+    if (components.length === 0) return calcDisplayCoverage(); // fallback
+    let minScore = 1;
     for (const pixels of components) {
+      // Component-level coverage
       let covered = 0;
       for (const idx of pixels) {
         if (visitedRef.current[idx]) covered++;
       }
-      const cov = covered / pixels.length;
-      if (cov < minCov) minCov = cov;
+      const compCov = covered / pixels.length;
+      if (compCov < minScore) minScore = compCov;
+      // Spatial spread within this component
+      const spread = calcComponentSpread(pixels);
+      if (spread < minScore) minScore = spread;
     }
-    return minCov;
+    return minScore;
   };
 
   // ── Pointer position ─────────────────────────────────────────
@@ -440,7 +483,7 @@ export function TraceLetter({ content, onAnswer, feedback }: QuestionProps) {
         {done
           ? "✓ Letter traced!"
           : notQuite
-          ? "Not quite — keep tracing and try again"
+          ? "Not quite — trace the full shape, including all dots"
           : pct > 0
           ? `${Math.round(pct * 100)}% — keep going!`
           : strokeCount > 0

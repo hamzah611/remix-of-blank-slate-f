@@ -131,6 +131,7 @@ export type Database = {
           display_name: string | null
           id: string
           is_admin: boolean
+          plan: string
           updated_at: string
           user_id: string
         }
@@ -140,6 +141,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_admin?: boolean
+          plan?: string
           updated_at?: string
           user_id: string
         }
@@ -149,6 +151,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           is_admin?: boolean
+          plan?: string
           updated_at?: string
           user_id?: string
         }
@@ -323,6 +326,38 @@ export type Database = {
           },
         ]
       }
+      user_sessions: {
+        Row: {
+          ended_at: string | null
+          id: string
+          stage_id: string | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          stage_id?: string | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          stage_id?: string | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_streaks: {
         Row: {
           current_streak: number
@@ -379,7 +414,32 @@ export type Database = {
         Returns: undefined
       }
       admin_delete_unit: { Args: { _unit_id: string }; Returns: undefined }
+      get_all_users_for_admin: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          plan: string
+          user_id: string
+        }[]
+      }
+      get_user_analytics: {
+        Args: never
+        Returns: {
+          display_name: string
+          last_active: string
+          lessons_completed: number
+          total_minutes_spent: number
+          total_xp: number
+          user_id: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
+      set_user_plan: {
+        Args: { new_plan: string; target_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

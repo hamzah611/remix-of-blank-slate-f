@@ -2,18 +2,24 @@ import { useState } from "react";
 import { OptionButton, type QuestionProps } from "./shared";
 
 export function Reading({ content, onAnswer, feedback }: QuestionProps) {
-  const [selected, setSelected] = useState<number | null>(null);
+  const { passage, question, correct_answer, options = [] } = content ?? {};
 
-  // passage: string — Urdu reading passage
-  // question: string — comprehension question
-  // correct_index: number
-  // options: string[]
-  const { passage, question, correct_index, options = [] } = content;
+  // Shuffle correct_answer in with wrong options once on mount
+  const [allOptions] = useState<string[]>(() => {
+    const arr: string[] = [correct_answer, ...(options as string[])].filter(Boolean);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  });
 
-  const handlePick = (idx: number) => {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const handlePick = (opt: string) => {
     if (feedback !== "idle") return;
-    setSelected(idx);
-    onAnswer(idx === correct_index);
+    setSelected(opt);
+    onAnswer(opt === correct_answer);
   };
 
   return (
@@ -43,16 +49,14 @@ export function Reading({ content, onAnswer, feedback }: QuestionProps) {
         {passage}
       </div>
 
-      {/* Question */}
+      {/* Comprehension question */}
       <p
         style={{
-          fontFamily: "'Amiri', serif",
-          fontSize: 20,
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 15,
+          fontWeight: 600,
           color: "#1E2D3D",
-          direction: "rtl",
-          textAlign: "right",
-          lineHeight: 1.6,
-          fontWeight: 700,
+          lineHeight: 1.5,
         }}
       >
         {question}
@@ -60,13 +64,13 @@ export function Reading({ content, onAnswer, feedback }: QuestionProps) {
 
       {/* Options */}
       <div className="flex flex-col gap-3">
-        {options.map((opt: string, idx: number) => (
+        {allOptions.map((opt) => (
           <OptionButton
-            key={idx}
+            key={opt}
             label={opt}
-            isSelected={selected === idx}
-            feedback={selected === idx ? feedback : "idle"}
-            onClick={() => handlePick(idx)}
+            isSelected={selected === opt}
+            feedback={selected === opt ? feedback : "idle"}
+            onClick={() => handlePick(opt)}
             urdu
           />
         ))}

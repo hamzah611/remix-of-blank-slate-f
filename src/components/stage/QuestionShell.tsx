@@ -331,12 +331,12 @@ export function QuestionShell({
                     Correct: {question.content.correct_letter}
                   </p>
                 )}
-                {feedback === "wrong" && question.content.correct_word && (
+                {feedback === "wrong" && (question.content.correct_word || question.content.correct_answer) && (
                   <p style={{ fontSize: 15, color: "rgba(255,255,255,0.9)", marginTop: 3, fontFamily: "'Amiri', serif", direction: "rtl" }}>
-                    Correct: {question.content.correct_word}
+                    Correct: {question.content.correct_word ?? question.content.correct_answer}
                   </p>
                 )}
-                {feedback === "wrong" && !question.content.correct_letter && !question.content.correct_word && (
+                {feedback === "wrong" && !question.content.correct_letter && !question.content.correct_word && !question.content.correct_answer && (
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 3, fontFamily: "'Inter', system-ui, sans-serif" }}>
                     Review the material and try again
                   </p>

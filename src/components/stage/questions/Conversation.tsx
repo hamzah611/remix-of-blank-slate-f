@@ -2,14 +2,25 @@ import { useState } from "react";
 import { OptionButton, type QuestionProps } from "./shared";
 
 export function Conversation({ content, onAnswer, feedback }: QuestionProps) {
-  const [selected, setSelected] = useState<number | null>(null);
+  const { prompt, correct_answer, options = [] } = content ?? {};
 
-  const { prompt, correct_index, options = [] } = content ?? {};
+  // Shuffle correct_answer in with wrong options once on mount
+  const [allOptions] = useState<string[]>(() => {
+    const arr: string[] = [correct_answer, ...(options as string[])].filter(Boolean);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  });
 
-  const handlePick = (idx: number) => {
+  // Track selected by value (not index) — correct_answer is a string
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const handlePick = (opt: string) => {
     if (feedback !== "idle") return;
-    setSelected(idx);
-    onAnswer(idx === correct_index);
+    setSelected(opt);
+    onAnswer(opt === correct_answer);
   };
 
   return (
@@ -42,19 +53,14 @@ export function Conversation({ content, onAnswer, feedback }: QuestionProps) {
       </div>
 
       {/* Options */}
-      {(!options || options.length === 0) && (
-        <p style={{ color: "rgba(30,45,61,0.4)", fontSize: 14, fontFamily: "'Inter', system-ui, sans-serif", textAlign: "center" }}>
-          No options available for this question.
-        </p>
-      )}
       <div className="flex flex-col gap-3 mt-2">
-        {(options ?? []).map((opt: { text: string }, idx: number) => (
+        {allOptions.map((opt) => (
           <OptionButton
-            key={idx}
-            label={opt.text}
-            isSelected={selected === idx}
-            feedback={selected === idx ? feedback : "idle"}
-            onClick={() => handlePick(idx)}
+            key={opt}
+            label={opt}
+            isSelected={selected === opt}
+            feedback={selected === opt ? feedback : "idle"}
+            onClick={() => handlePick(opt)}
             urdu
           />
         ))}

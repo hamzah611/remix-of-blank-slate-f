@@ -3,22 +3,29 @@ import { OptionButton, type QuestionProps } from "./shared";
 
 interface DialogueLine {
   speaker: string;
-  text: string;
+  line: string; // admin saves as "line", not "text"
 }
 
 export function Dialogue({ content, onAnswer, feedback }: QuestionProps) {
-  const [selected, setSelected] = useState<number | null>(null);
+  // Admin saves field as "dialogue" (not "lines"), each entry has {speaker, line}
+  const { dialogue: lines = [], question, correct_answer, options = [] } = content ?? {};
 
-  // lines: DialogueLine[] — the conversation transcript
-  // question: string — what to answer about the dialogue
-  // correct_index: number
-  // options: string[]
-  const { lines = [], question, correct_index, options = [] } = content ?? {};
+  // Shuffle correct_answer in with wrong options once on mount
+  const [allOptions] = useState<string[]>(() => {
+    const arr: string[] = [correct_answer, ...(options as string[])].filter(Boolean);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  });
 
-  const handlePick = (idx: number) => {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const handlePick = (opt: string) => {
     if (feedback !== "idle") return;
-    setSelected(idx);
-    onAnswer(idx === correct_index);
+    setSelected(opt);
+    onAnswer(opt === correct_answer);
   };
 
   return (
@@ -42,7 +49,7 @@ export function Dialogue({ content, onAnswer, feedback }: QuestionProps) {
           gap: 10,
         }}
       >
-        {lines.map((line: DialogueLine, i: number) => {
+        {(lines as DialogueLine[]).map((entry, i) => {
           const isLeft = i % 2 === 0;
           return (
             <div
@@ -64,7 +71,7 @@ export function Dialogue({ content, onAnswer, feedback }: QuestionProps) {
                   marginBottom: 3,
                 }}
               >
-                {line.speaker}
+                {entry.speaker}
               </span>
               <div
                 style={{
@@ -82,41 +89,35 @@ export function Dialogue({ content, onAnswer, feedback }: QuestionProps) {
                   maxWidth: "80%",
                 }}
               >
-                {line.text}
+                {entry.line}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Question */}
+      {/* Comprehension question */}
       <p
         style={{
-          fontFamily: "'Amiri', serif",
-          fontSize: 20,
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 15,
+          fontWeight: 600,
           color: "#1E2D3D",
-          direction: "rtl",
-          textAlign: "right",
-          lineHeight: 1.6,
+          lineHeight: 1.5,
         }}
       >
         {question}
       </p>
 
       {/* Options */}
-      {(!options || options.length === 0) && (
-        <p style={{ color: "rgba(30,45,61,0.4)", fontSize: 14, fontFamily: "'Inter', system-ui, sans-serif", textAlign: "center" }}>
-          No options available for this question.
-        </p>
-      )}
       <div className="flex flex-col gap-3">
-        {(options ?? []).map((opt: string, idx: number) => (
+        {allOptions.map((opt) => (
           <OptionButton
-            key={idx}
+            key={opt}
             label={opt}
-            isSelected={selected === idx}
-            feedback={selected === idx ? feedback : "idle"}
-            onClick={() => handlePick(idx)}
+            isSelected={selected === opt}
+            feedback={selected === opt ? feedback : "idle"}
+            onClick={() => handlePick(opt)}
             urdu
           />
         ))}

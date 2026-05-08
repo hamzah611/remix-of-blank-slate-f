@@ -223,7 +223,7 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
         </button>
 
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
           <h2 style={{
             fontFamily: "'Playfair Display', Georgia, serif",
@@ -235,9 +235,44 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
           <p style={{
             fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 14, color: "rgba(30,45,61,0.55)", lineHeight: 1.6,
+            marginBottom: 16,
           }}>
-            Unlock all units and continue your Urdu journey. Pay manually and your account will be upgraded within 24 hours.
+            Unlock all units and continue your Urdu journey.
           </p>
+
+          {/* Pricing cards */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <div style={{
+              flex: 1, backgroundColor: "rgba(107,163,200,0.08)",
+              border: "1.5px solid rgba(107,163,200,0.3)",
+              borderRadius: 14, padding: "14px 10px",
+            }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#4A7FA5", marginBottom: 6 }}>
+                Students
+              </p>
+              <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: "#1E2D3D", letterSpacing: "-0.02em", lineHeight: 1 }}>
+                Rs. 150
+              </p>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: "rgba(30,45,61,0.4)", marginTop: 4 }}>
+                with student ID
+              </p>
+            </div>
+            <div style={{
+              flex: 1, backgroundColor: "rgba(212,168,83,0.08)",
+              border: "1.5px solid rgba(212,168,83,0.35)",
+              borderRadius: 14, padding: "14px 10px",
+            }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#C17B4A", marginBottom: 6 }}>
+                Others
+              </p>
+              <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 26, fontWeight: 700, color: "#1E2D3D", letterSpacing: "-0.02em", lineHeight: 1 }}>
+                Rs. 250
+              </p>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: "rgba(30,45,61,0.4)", marginTop: 4 }}>
+                general access
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Steps */}

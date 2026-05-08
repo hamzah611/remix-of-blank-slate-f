@@ -5,12 +5,12 @@ export type ContentStatus = "draft" | "published";
 export type AdminRole = "super_admin" | "content_admin";
 
 export const REQUIRED_QUESTION_COUNTS: Record<StageType, number> = {
-  aghaaz:   10,
-  suno:      5,
-  samjho:   15,
-  pehchano: 10,
-  dohrao:    0,
-  guftugu:   2,
+  aghaaz:   0,
+  suno:     0,
+  samjho:   0,
+  pehchano: 0,
+  dohrao:   0,
+  guftugu:  0,
 };
 
 export function getAdminRole(user: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown> }): AdminRole | null {

@@ -2,11 +2,11 @@ import { useState } from "react";
 import type { QuestionProps } from "./shared";
 
 export function BuildWord({ content, onAnswer, feedback }: QuestionProps) {
-  // scrambled_letters: string[] — shuffled letters of the word
-  // word: string — the target word to build
   const { scrambled_letters = [], word: targetWord, hint } = content;
 
-  const [slots, setSlots] = useState<(string | null)[]>(
+  // Store SOURCE INDEX in each slot (not the letter value) so duplicate
+  // letters are tracked correctly — e.g. ببا has two ب, each is a distinct slot.
+  const [slotSrcIdxs, setSlotSrcIdxs] = useState<(number | null)[]>(
     Array(targetWord?.length ?? scrambled_letters.length).fill(null)
   );
   const [available, setAvailable] = useState<boolean[]>(
@@ -17,41 +17,41 @@ export function BuildWord({ content, onAnswer, feedback }: QuestionProps) {
 
   const handleLetterClick = (srcIdx: number) => {
     if (disabled || !available[srcIdx]) return;
-    const firstEmpty = slots.findIndex((s) => s === null);
+    const firstEmpty = slotSrcIdxs.findIndex((s) => s === null);
     if (firstEmpty === -1) return;
-    const newSlots = [...slots];
-    newSlots[firstEmpty] = scrambled_letters[srcIdx];
-    setSlots(newSlots);
+    const newSlots = [...slotSrcIdxs];
+    newSlots[firstEmpty] = srcIdx;
+    setSlotSrcIdxs(newSlots);
     const newAvail = [...available];
     newAvail[srcIdx] = false;
     setAvailable(newAvail);
   };
 
   const handleSlotClick = (slotIdx: number) => {
-    if (disabled || slots[slotIdx] === null) return;
-    const letter = slots[slotIdx]!;
-    // Return the letter to the first matching available=false source slot
-    const srcIdx = scrambled_letters.findIndex(
-      (l, i) => l === letter && !available[i]
-    );
-    const newSlots = [...slots];
+    if (disabled || slotSrcIdxs[slotIdx] === null) return;
+    const srcIdx = slotSrcIdxs[slotIdx]!;
+    const newSlots = [...slotSrcIdxs];
     newSlots[slotIdx] = null;
-    setSlots(newSlots);
-    if (srcIdx !== -1) {
-      const newAvail = [...available];
-      newAvail[srcIdx] = true;
-      setAvailable(newAvail);
-    }
+    setSlotSrcIdxs(newSlots);
+    const newAvail = [...available];
+    newAvail[srcIdx] = true;
+    setAvailable(newAvail);
+  };
+
+  const handleClear = () => {
+    setSlotSrcIdxs(Array(slotSrcIdxs.length).fill(null));
+    setAvailable(scrambled_letters.map(() => true));
   };
 
   const handleCheck = () => {
     if (disabled) return;
-    if (slots.some((s) => s === null)) return;
-    const assembled = slots.join("");
+    if (slotSrcIdxs.some((s) => s === null)) return;
+    const assembled = slotSrcIdxs.map((i) => scrambled_letters[i!]).join("");
     onAnswer(assembled === targetWord);
   };
 
-  const allFilled = slots.every((s) => s !== null);
+  const allFilled = slotSrcIdxs.every((s) => s !== null);
+  const anyFilled = slotSrcIdxs.some((s) => s !== null);
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -68,38 +68,41 @@ export function BuildWord({ content, onAnswer, feedback }: QuestionProps) {
 
       {/* Answer slots */}
       <div className="flex gap-2 flex-row-reverse flex-wrap justify-center">
-        {slots.map((letter, i) => (
-          <button
-            key={i}
-            onClick={() => handleSlotClick(i)}
-            disabled={disabled}
-            style={{
-              width: 48,
-              height: 56,
-              borderRadius: 12,
-              border: letter
-                ? `2px solid ${feedback === "correct" ? "#D4A853" : feedback === "wrong" ? "#C17B4A" : "#D4A853"}`
-                : "2px dashed #C8BDB0",
-              backgroundColor: letter
-                ? feedback === "correct"
-                  ? "#D4A853"
-                  : feedback === "wrong"
-                  ? "#C17B4A"
-                  : "#FFF8EC"
-                : "transparent",
-              color: feedback !== "idle" && letter ? "#FFFFFF" : "#1E2D3D",
-              fontFamily: "'Amiri', serif",
-              fontSize: 22,
-              cursor: letter && !disabled ? "pointer" : "default",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.15s",
-            }}
-          >
-            {letter}
-          </button>
-        ))}
+        {slotSrcIdxs.map((srcIdx, i) => {
+          const letter = srcIdx !== null ? scrambled_letters[srcIdx] : null;
+          return (
+            <button
+              key={i}
+              onClick={() => handleSlotClick(i)}
+              disabled={disabled}
+              style={{
+                width: 48,
+                height: 56,
+                borderRadius: 12,
+                border: letter
+                  ? `2px solid ${feedback === "correct" ? "#D4A853" : feedback === "wrong" ? "#C17B4A" : "#D4A853"}`
+                  : "2px dashed #C8BDB0",
+                backgroundColor: letter
+                  ? feedback === "correct"
+                    ? "#D4A853"
+                    : feedback === "wrong"
+                    ? "#C17B4A"
+                    : "#FFF8EC"
+                  : "transparent",
+                color: feedback !== "idle" && letter ? "#FFFFFF" : "#1E2D3D",
+                fontFamily: "'Amiri', serif",
+                fontSize: 22,
+                cursor: letter && !disabled ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.15s",
+              }}
+            >
+              {letter}
+            </button>
+          );
+        })}
       </div>
 
       {/* Available letters */}
@@ -130,26 +133,52 @@ export function BuildWord({ content, onAnswer, feedback }: QuestionProps) {
         ))}
       </div>
 
-      {/* Check button */}
-      <button
-        onClick={handleCheck}
-        disabled={!allFilled || disabled}
-        style={{
-          width: "100%",
-          padding: "14px",
-          borderRadius: 16,
-          backgroundColor: allFilled && !disabled ? "#1E2D3D" : "#E8E0D5",
-          color: allFilled && !disabled ? "#FAF6F0" : "#1E2D3D",
-          border: "none",
-          fontWeight: 600,
-          fontSize: 15,
-          cursor: allFilled && !disabled ? "pointer" : "default",
-          transition: "background-color 0.15s",
-          opacity: allFilled ? 1 : 0.5,
-        }}
-      >
-        Check
-      </button>
+      {/* Action row */}
+      <div style={{ display: "flex", gap: 10, width: "100%" }}>
+        {/* Clear button — only shown when slots have letters */}
+        {anyFilled && !disabled && (
+          <button
+            onClick={handleClear}
+            style={{
+              padding: "14px 20px",
+              borderRadius: 16,
+              backgroundColor: "transparent",
+              color: "#C17B4A",
+              border: "1.5px solid rgba(193,123,74,0.3)",
+              fontWeight: 600,
+              fontSize: 14,
+              cursor: "pointer",
+              flexShrink: 0,
+              transition: "background 150ms ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(193,123,74,0.06)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            Clear
+          </button>
+        )}
+
+        {/* Check button */}
+        <button
+          onClick={handleCheck}
+          disabled={!allFilled || disabled}
+          style={{
+            flex: 1,
+            padding: "14px",
+            borderRadius: 16,
+            backgroundColor: allFilled && !disabled ? "#1E2D3D" : "#E8E0D5",
+            color: allFilled && !disabled ? "#FAF6F0" : "#1E2D3D",
+            border: "none",
+            fontWeight: 600,
+            fontSize: 15,
+            cursor: allFilled && !disabled ? "pointer" : "default",
+            transition: "background-color 0.15s",
+            opacity: allFilled ? 1 : 0.5,
+          }}
+        >
+          Check
+        </button>
+      </div>
     </div>
   );
 }

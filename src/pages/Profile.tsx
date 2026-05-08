@@ -84,8 +84,9 @@ export default function Profile() {
         .eq("user_id", userId);
       if (error) throw error;
 
-      // Also update auth metadata
+      // Update auth metadata + refresh session so nav picks up new name immediately
       await supabase.auth.updateUser({ data: { display_name: draftName.trim() } });
+      await supabase.auth.refreshSession();
 
       setDisplayName(draftName.trim());
       setNameSaved(true);

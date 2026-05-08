@@ -86,9 +86,11 @@ export function QuestionShell({
 }: QuestionShellProps) {
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
   const [retryCount, setRetryCount] = useState(0);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   const question = questions[currentIdx];
-  const progress = (currentIdx / questions.length) * 100;
+  // Show progress up to and including the current question (not starting at 0%)
+  const progress = ((currentIdx + 1) / questions.length) * 100;
   const label = TYPE_LABELS[question?.type ?? ""] ?? "";
 
   const handleAnswer = (correct: boolean) => {
@@ -131,7 +133,7 @@ export function QuestionShell({
       >
         {/* Quit / back button */}
         <button
-          onClick={onQuit}
+          onClick={() => setShowQuitConfirm(true)}
           style={{
             background: "none",
             border: "none",
@@ -215,6 +217,62 @@ export function QuestionShell({
         />
       </div>
 
+      {/* ── Quit confirmation modal ── */}
+      {showQuitConfirm && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 50,
+            backgroundColor: "rgba(30,45,61,0.55)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 24,
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+          }}
+          onClick={() => setShowQuitConfirm(false)}
+        >
+          <div
+            style={{
+              backgroundColor: "#FAF6F0", borderRadius: 20, padding: "32px 28px",
+              maxWidth: 340, width: "100%", textAlign: "center",
+              boxShadow: "0 24px 64px rgba(30,45,61,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, fontWeight: 700, color: "#1E2D3D", marginBottom: 10 }}>
+              Leave this stage?
+            </p>
+            <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, color: "rgba(30,45,61,0.55)", lineHeight: 1.6, marginBottom: 28 }}>
+              Your progress on this lesson won't be saved.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setShowQuitConfirm(false)}
+                style={{
+                  flex: 1, padding: "13px", borderRadius: 12,
+                  border: "1.5px solid rgba(30,45,61,0.15)",
+                  backgroundColor: "transparent", color: "#1E2D3D",
+                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Keep going
+              </button>
+              <button
+                onClick={onQuit}
+                style={{
+                  flex: 1, padding: "13px", borderRadius: 12,
+                  border: "none", backgroundColor: "#1E2D3D", color: "#FAF6F0",
+                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Feedback panel ── */}
       {feedback !== "idle" && (
         <div
@@ -269,28 +327,18 @@ export function QuestionShell({
                   {feedback === "correct" ? "Sahi! صحیح" : "Oops! غلط"}
                 </p>
                 {feedback === "wrong" && question.content.correct_letter && (
-                  <p
-                    style={{
-                      fontSize: 13,
-                      color: "rgba(255,255,255,0.85)",
-                      marginTop: 3,
-                      fontFamily: "'Inter', system-ui, sans-serif",
-                    }}
-                  >
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 3, fontFamily: "'Inter', system-ui, sans-serif" }}>
                     Correct: {question.content.correct_letter}
                   </p>
                 )}
                 {feedback === "wrong" && question.content.correct_word && (
-                  <p
-                    style={{
-                      fontSize: 15,
-                      color: "rgba(255,255,255,0.9)",
-                      marginTop: 3,
-                      fontFamily: "'Amiri', serif",
-                      direction: "rtl",
-                    }}
-                  >
+                  <p style={{ fontSize: 15, color: "rgba(255,255,255,0.9)", marginTop: 3, fontFamily: "'Amiri', serif", direction: "rtl" }}>
                     Correct: {question.content.correct_word}
+                  </p>
+                )}
+                {feedback === "wrong" && !question.content.correct_letter && !question.content.correct_word && (
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 3, fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    Review the material and try again
                   </p>
                 )}
               </div>

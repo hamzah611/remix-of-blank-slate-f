@@ -4,8 +4,7 @@ import { OptionButton, type QuestionProps } from "./shared";
 export function Conversation({ content, onAnswer, feedback }: QuestionProps) {
   const [selected, setSelected] = useState<number | null>(null);
 
-  const { prompt, correct_index, options = [] } = content;
-  // options: array of { text: string } response choices
+  const { prompt, correct_index, options = [] } = content ?? {};
 
   const handlePick = (idx: number) => {
     if (feedback !== "idle") return;
@@ -43,8 +42,13 @@ export function Conversation({ content, onAnswer, feedback }: QuestionProps) {
       </div>
 
       {/* Options */}
+      {(!options || options.length === 0) && (
+        <p style={{ color: "rgba(30,45,61,0.4)", fontSize: 14, fontFamily: "'Inter', system-ui, sans-serif", textAlign: "center" }}>
+          No options available for this question.
+        </p>
+      )}
       <div className="flex flex-col gap-3 mt-2">
-        {options.map((opt: { text: string }, idx: number) => (
+        {(options ?? []).map((opt: { text: string }, idx: number) => (
           <OptionButton
             key={idx}
             label={opt.text}

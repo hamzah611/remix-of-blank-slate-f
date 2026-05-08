@@ -979,12 +979,6 @@ const CourseMap = () => {
             backdropFilter: "blur(4px)",
             WebkitBackdropFilter: "blur(4px)",
           }}
-          onClick={() => {
-            if (onboardStep < 2) { setOnboardStep(onboardStep + 1); } else {
-              setShowOnboarding(false);
-              localStorage.setItem("guftugu_onboarded", "1");
-            }
-          }}
         >
           <div
             style={{
@@ -992,7 +986,6 @@ const CourseMap = () => {
               maxWidth: 380, width: "100%", textAlign: "center",
               boxShadow: "0 24px 64px rgba(30,45,61,0.25)",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             {/* Step indicator */}
             <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 28 }}>

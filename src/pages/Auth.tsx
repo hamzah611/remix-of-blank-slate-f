@@ -74,6 +74,7 @@ const Auth = () => {
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [resetCooldown, setResetCooldown] = useState(0); // seconds remaining
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -153,7 +154,7 @@ const Auth = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || resetCooldown > 0) return;
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -161,6 +162,14 @@ const Auth = () => {
       });
       if (error) throw error;
       setResetSent(true);
+      // 30-second cooldown to prevent spam
+      setResetCooldown(30);
+      const interval = setInterval(() => {
+        setResetCooldown((c) => {
+          if (c <= 1) { clearInterval(interval); return 0; }
+          return c - 1;
+        });
+      }, 1000);
     } catch (err) {
       toast({
         title: "Failed to send reset email",
@@ -214,8 +223,8 @@ const Auth = () => {
               </p>
               <form onSubmit={handleForgotPassword} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <input type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} required className="gf-input" />
-                <button type="submit" disabled={loading} className="gf-btn-primary" style={{ marginTop: 4 }}>
-                  {loading ? "Sending…" : "Send reset link"}
+                <button type="submit" disabled={loading || resetCooldown > 0} className="gf-btn-primary" style={{ marginTop: 4, opacity: resetCooldown > 0 ? 0.55 : 1 }}>
+                  {loading ? "Sending…" : resetCooldown > 0 ? `Resend in ${resetCooldown}s` : "Send reset link"}
                 </button>
               </form>
             </>

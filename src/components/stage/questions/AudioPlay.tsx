@@ -6,28 +6,31 @@ export function AudioPlay({ content, onAnswer, feedback }: QuestionProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [played, setPlayed] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [audioError, setAudioError] = useState(!audio_url); // error immediately if no URL
 
   const disabled = feedback !== "idle";
 
   const handlePlay = () => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || audioError) return;
     if (playing) {
       audio.pause();
       audio.currentTime = 0;
       setPlaying(false);
       return;
     }
-    audio.play();
+    audio.play().catch(() => setAudioError(true));
     setPlaying(true);
     setPlayed(true);
   };
 
   const handleEnded = () => setPlaying(false);
+  const handleAudioError = () => { setAudioError(true); setPlaying(false); };
 
+  // On error, still allow confirming — can't block user on a broken audio file
   const handleConfirm = () => {
-    if (!played || disabled) return;
-    onAnswer(true); // listening question — always correct once played
+    if ((!played && !audioError) || disabled) return;
+    onAnswer(true);
   };
 
   return (
@@ -40,19 +43,30 @@ export function AudioPlay({ content, onAnswer, feedback }: QuestionProps) {
       </p>
 
       {/* Audio element */}
-      <audio ref={audioRef} src={audio_url} onEnded={handleEnded} />
+      <audio ref={audioRef} src={audio_url} onEnded={handleEnded} onError={handleAudioError} />
+
+      {/* Error banner */}
+      {audioError && (
+        <div style={{
+          backgroundColor: "rgba(193,123,74,0.1)", border: "1px solid rgba(193,123,74,0.3)",
+          borderRadius: 12, padding: "10px 16px", fontSize: 13,
+          color: "#C17B4A", fontFamily: "'Inter', system-ui, sans-serif", textAlign: "center",
+        }}>
+          Audio unavailable — tap Continue to proceed
+        </div>
+      )}
 
       {/* Play button */}
       <button
         onClick={handlePlay}
-        disabled={disabled}
+        disabled={disabled || audioError}
         style={{
           width: 96,
           height: 96,
           borderRadius: "50%",
-          backgroundColor: playing ? "#C17B4A" : "#D4A853",
+          backgroundColor: audioError ? "rgba(30,45,61,0.12)" : playing ? "#C17B4A" : "#D4A853",
           border: "none",
-          cursor: disabled ? "default" : "pointer",
+          cursor: disabled || audioError ? "default" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -98,22 +112,22 @@ export function AudioPlay({ content, onAnswer, feedback }: QuestionProps) {
       {/* Confirm button */}
       <button
         onClick={handleConfirm}
-        disabled={!played || disabled}
+        disabled={(!played && !audioError) || disabled}
         style={{
           width: "100%",
           padding: "14px",
           borderRadius: 16,
-          backgroundColor: played && !disabled ? "#1E2D3D" : "#E8E0D5",
-          color: played && !disabled ? "#FAF6F0" : "#1E2D3D",
+          backgroundColor: (played || audioError) && !disabled ? "#1E2D3D" : "#E8E0D5",
+          color: (played || audioError) && !disabled ? "#FAF6F0" : "#1E2D3D",
           border: "none",
           fontWeight: 600,
           fontSize: 15,
-          cursor: played && !disabled ? "pointer" : "default",
+          cursor: (played || audioError) && !disabled ? "pointer" : "default",
           transition: "background-color 0.15s",
-          opacity: played ? 1 : 0.5,
+          opacity: (played || audioError) ? 1 : 0.5,
         }}
       >
-        {played ? "Continue" : "Play the audio first"}
+        {audioError ? "Continue" : played ? "Continue" : "Play the audio first"}
       </button>
     </div>
   );

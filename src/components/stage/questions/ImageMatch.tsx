@@ -75,9 +75,12 @@ export function ImageMatch({ content, onAnswer, feedback }: QuestionProps) {
               fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 13,
               color: "#C17B4A",
+              padding: "16px",
+              textAlign: "center",
+              display: "block",
             }}
           >
-            Could not load image
+            🖼️ Image unavailable — try your best
           </span>
         )}
 

@@ -7,21 +7,19 @@ export function FillBlank({ content, onAnswer, feedback }: QuestionProps) {
   // sentence: string with "___" placeholder, e.g. "میں ___ ہوں"
   // correct_answer: string
   // options: string[] — wrong words
-  const { sentence, correct_answer, options = [] } = content;
+  const { sentence, correct_answer, options = [] } = content ?? {};
 
-  const allOptions: string[] = shuffleOnce([correct_answer, ...options.slice(0, 3)]);
-
-  function shuffleOnce(arr: string[]) {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
+  const [allOptions] = useState<string[]>(() => {
+    const arr = [correct_answer, ...options.slice(0, 3)].filter(Boolean);
+    for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    return a;
-  }
+    return arr;
+  });
 
-  // Build display sentence: replace ___ with selected word or blank box
-  const displayParts = sentence.split("___");
+  // Split on ALL ___ occurrences so sentences with multiple blanks render correctly
+  const displayParts: string[] = (sentence ?? "").split("___");
 
   const handlePick = (word: string) => {
     if (feedback !== "idle") return;
@@ -38,7 +36,7 @@ export function FillBlank({ content, onAnswer, feedback }: QuestionProps) {
         Fill in the blank
       </p>
 
-      {/* Sentence display */}
+      {/* Sentence display — handles any number of ___ blanks */}
       <div
         style={{
           backgroundColor: "#FAF6F0",
@@ -53,22 +51,27 @@ export function FillBlank({ content, onAnswer, feedback }: QuestionProps) {
           lineHeight: 2,
         }}
       >
-        {displayParts[0]}
-        <span
-          style={{
-            display: "inline-block",
-            minWidth: 80,
-            borderBottom: selected ? "2px solid #D4A853" : "2px dashed #C8BDB0",
-            color: selected ? "#D4A853" : "transparent",
-            fontWeight: 700,
-            margin: "0 4px",
-            paddingBottom: 2,
-            verticalAlign: "bottom",
-          }}
-        >
-          {selected || "    "}
-        </span>
-        {displayParts[1] || ""}
+        {displayParts.map((part, i) => (
+          <span key={i}>
+            {part}
+            {i < displayParts.length - 1 && (
+              <span
+                style={{
+                  display: "inline-block",
+                  minWidth: 80,
+                  borderBottom: selected ? "2px solid #D4A853" : "2px dashed #C8BDB0",
+                  color: selected ? "#D4A853" : "transparent",
+                  fontWeight: 700,
+                  margin: "0 4px",
+                  paddingBottom: 2,
+                  verticalAlign: "bottom",
+                }}
+              >
+                {selected || "    "}
+              </span>
+            )}
+          </span>
+        ))}
       </div>
 
       {/* Word options */}

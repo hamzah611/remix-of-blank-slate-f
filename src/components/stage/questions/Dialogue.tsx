@@ -13,7 +13,7 @@ export function Dialogue({ content, onAnswer, feedback }: QuestionProps) {
   // question: string — what to answer about the dialogue
   // correct_index: number
   // options: string[]
-  const { lines = [], question, correct_index, options = [] } = content;
+  const { lines = [], question, correct_index, options = [] } = content ?? {};
 
   const handlePick = (idx: number) => {
     if (feedback !== "idle") return;
@@ -104,8 +104,13 @@ export function Dialogue({ content, onAnswer, feedback }: QuestionProps) {
       </p>
 
       {/* Options */}
+      {(!options || options.length === 0) && (
+        <p style={{ color: "rgba(30,45,61,0.4)", fontSize: 14, fontFamily: "'Inter', system-ui, sans-serif", textAlign: "center" }}>
+          No options available for this question.
+        </p>
+      )}
       <div className="flex flex-col gap-3">
-        {options.map((opt: string, idx: number) => (
+        {(options ?? []).map((opt: string, idx: number) => (
           <OptionButton
             key={idx}
             label={opt}

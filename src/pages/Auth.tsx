@@ -66,13 +66,14 @@ function FieldError({ message }: { message?: string }) {
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -150,6 +151,27 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+    } catch (err) {
+      toast({
+        title: "Failed to send reset email",
+        description: err instanceof Error ? err.message : "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogle = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
@@ -164,6 +186,44 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // ── Forgot password panel ─────────────────────────────────
+  if (mode === "forgot") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#FAF6F0", padding: "40px 24px" }}>
+        <div className="animate-page-entry" style={{ width: "100%", maxWidth: 400 }}>
+          <button onClick={() => { setMode("signin"); setResetSent(false); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#6BA3C8", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', system-ui, sans-serif", marginBottom: 24, padding: 0, display: "flex", alignItems: "center", gap: 6 }}>
+            ← Back to sign in
+          </button>
+          <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 34, fontWeight: 700, color: "#1E2D3D", letterSpacing: "-0.02em", marginBottom: 8 }}>
+            Reset password
+          </h1>
+          {resetSent ? (
+            <div style={{ backgroundColor: "rgba(107,163,200,0.08)", border: "1px solid rgba(107,163,200,0.3)", borderRadius: 12, padding: "20px 18px" }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: "#1E2D3D", lineHeight: 1.6 }}>
+                ✓ Check your inbox — we sent a reset link to <strong>{email}</strong>
+              </p>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: "rgba(30,45,61,0.5)", marginTop: 8 }}>
+                Didn't arrive? Check your spam folder or try again.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: "rgba(30,45,61,0.55)", marginBottom: 28 }}>
+                Enter your email and we'll send you a link to reset your password.
+              </p>
+              <form onSubmit={handleForgotPassword} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <input type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} required className="gf-input" />
+                <button type="submit" disabled={loading} className="gf-btn-primary" style={{ marginTop: 4 }}>
+                  {loading ? "Sending…" : "Send reset link"}
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const formPanel = (
     <div
@@ -332,8 +392,17 @@ const Auth = () => {
         </div>
       )}
 
+      {/* Forgot password */}
+      {mode === "signin" && (
+        <div style={{ textAlign: "center", marginTop: 4 }}>
+          <button type="button" onClick={() => setMode("forgot")} className="gf-link" style={{ fontSize: 13, opacity: 0.7 }}>
+            Forgot your password?
+          </button>
+        </div>
+      )}
+
       {/* Toggle */}
-      <div style={{ textAlign: "center", marginTop: 24 }}>
+      <div style={{ textAlign: "center", marginTop: 20 }}>
         <button
           type="button"
           onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setNeedsConfirmation(false); }}

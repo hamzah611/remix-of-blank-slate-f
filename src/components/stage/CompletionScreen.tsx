@@ -2,6 +2,9 @@ interface CompletionScreenProps {
   stageName: string;
   xpEarned: number;
   accuracy: number; // 0–1
+  isFirstLesson?: boolean;
+  newStreak?: number;
+  xpMilestone?: number | null;
   onContinue: () => void;
 }
 
@@ -9,9 +12,23 @@ export function CompletionScreen({
   stageName,
   xpEarned,
   accuracy,
+  isFirstLesson = false,
+  newStreak = 0,
+  xpMilestone = null,
   onContinue,
 }: CompletionScreenProps) {
   const stars = accuracy >= 0.9 ? 3 : accuracy >= 0.7 ? 2 : 1;
+
+  // Pick the most exciting milestone to highlight
+  const milestoneMsg = isFirstLesson
+    ? { emoji: "🎉", text: "First lesson complete!" }
+    : xpMilestone
+    ? { emoji: "✦", text: `${xpMilestone} XP reached!` }
+    : newStreak >= 7
+    ? { emoji: "🔥", text: `${newStreak}-day streak!` }
+    : newStreak >= 3
+    ? { emoji: "🔥", text: `${newStreak} days in a row!` }
+    : null;
 
   return (
     <div
@@ -22,7 +39,6 @@ export function CompletionScreen({
       <div className="flex items-end gap-3 mb-8">
         {[1, 2, 3].map((s) => {
           const earned = s <= stars;
-          // Middle star is biggest for the "trophy" look
           const size = s === 2 ? 68 : 52;
           const delay = s === 1 ? 80 : s === 2 ? 200 : 340;
           return (
@@ -91,18 +107,40 @@ export function CompletionScreen({
       {/* ── Accuracy ── */}
       <p
         className="animate-fade-up delay-700"
-        style={{ color: "#1E2D3D", opacity: 0.45, fontSize: 14, marginBottom: 40, fontFamily: "'Inter', system-ui, sans-serif" }}
+        style={{ color: "#1E2D3D", opacity: 0.45, fontSize: 14, marginBottom: milestoneMsg ? 20 : 40, fontFamily: "'Inter', system-ui, sans-serif" }}
       >
         {Math.round(accuracy * 100)}% accuracy
       </p>
+
+      {/* ── Milestone banner ── */}
+      {milestoneMsg && (
+        <div
+          className="animate-pop-in delay-700"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            backgroundColor: isFirstLesson ? "rgba(107,163,200,0.10)" : "rgba(212,168,83,0.12)",
+            border: `1px solid ${isFirstLesson ? "rgba(107,163,200,0.3)" : "rgba(212,168,83,0.35)"}`,
+            borderRadius: 99,
+            padding: "8px 20px",
+            marginBottom: 28,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>{milestoneMsg.emoji}</span>
+          <span style={{
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, fontWeight: 700,
+            color: isFirstLesson ? "#6BA3C8" : "#C17B4A",
+            letterSpacing: "-0.01em",
+          }}>
+            {milestoneMsg.text}
+          </span>
+        </div>
+      )}
 
       {/* ── Divider ── */}
       <div
         className="animate-fade-up delay-700"
         style={{
-          width: "100%",
-          maxWidth: 360,
-          height: 1,
+          width: "100%", maxWidth: 360, height: 1,
           backgroundColor: "rgba(30,45,61,0.10)",
           marginBottom: 28,
         }}
@@ -113,8 +151,7 @@ export function CompletionScreen({
         onClick={onContinue}
         className="animate-slide-up delay-800 gf-focus-ring"
         style={{
-          width: "100%",
-          maxWidth: 360,
+          width: "100%", maxWidth: 360,
           padding: "18px",
           borderRadius: 16,
           backgroundColor: "#1E2D3D",
@@ -128,14 +165,8 @@ export function CompletionScreen({
           letterSpacing: "-0.01em",
           transition: "transform 80ms ease, box-shadow 150ms ease",
         }}
-        onMouseDown={(e) => {
-          e.currentTarget.style.transform = "scale(0.97)";
-          e.currentTarget.style.boxShadow = "0 2px 8px rgba(30,45,61,0.15)";
-        }}
-        onMouseUp={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 6px 24px rgba(30,45,61,0.22)";
-        }}
+        onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.97)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(30,45,61,0.15)"; }}
+        onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(30,45,61,0.22)"; }}
       >
         Back to Course Map →
       </button>

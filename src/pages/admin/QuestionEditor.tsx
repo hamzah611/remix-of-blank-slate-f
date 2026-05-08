@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
-import { GripVertical, Copy, Trash2, Plus, AlertTriangle } from "lucide-react";
+import { GripVertical, Copy, Trash2, Plus, AlertTriangle, Play } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form } from "@/components/ui/form";
@@ -190,6 +190,15 @@ export function QuestionEditor({ stageId, stageType, unitId }: Props) {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Preview as user */}
+          <button
+            onClick={() => window.open(`/stage/${stageId}`, "_blank")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+            style={{ backgroundColor: "rgba(107,163,200,0.12)", color: "#4A7FA5", border: "1px solid rgba(107,163,200,0.3)", cursor: "pointer" }}
+            title="Preview this stage as a learner"
+          >
+            <Play size={11} /> Preview
+          </button>
           {!isUnderfull && (
             <button
               onClick={handlePublishStage}

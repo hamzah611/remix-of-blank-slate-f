@@ -84,6 +84,15 @@ export default function Stage() {
   const [progressSaved, setProgressSaved] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
 
+  interface MilestoneInfo {
+    xpEarned: number;
+    newXpTotal: number;
+    newStreak: number;
+    isFirstLesson: boolean;
+    xpMilestone: number | null; // e.g. 100, 250, 500
+  }
+  const [milestoneInfo, setMilestoneInfo] = useState<MilestoneInfo | null>(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/auth"); return; }
@@ -171,29 +180,56 @@ export default function Stage() {
 
     try {
       await supabase.from("user_progress").upsert(
-        {
-          user_id: userId,
-          stage_id: stageId,
-          completed: true,
-          completed_at: new Date().toISOString(),
-        },
+        { user_id: userId, stage_id: stageId, completed: true, completed_at: new Date().toISOString() },
         { onConflict: "user_id,stage_id" }
       );
 
+      // Count total completed lessons (for "first lesson" milestone)
+      const { count: lessonCount } = await supabase
+        .from("user_progress")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("completed", true);
+
+      // XP
       const { data: xpRow } = await supabase
         .from("user_xp")
         .select("total_xp")
         .eq("user_id", userId)
         .single();
 
-      const currentXp = (xpRow as any)?.total_xp ?? 0;
+      const prevXp = (xpRow as any)?.total_xp ?? 0;
+      const newXpTotal = prevXp + xp;
 
       await supabase.from("user_xp").upsert(
-        { user_id: userId, total_xp: currentXp + xp },
+        { user_id: userId, total_xp: newXpTotal },
         { onConflict: "user_id" }
       );
+
+      // Streak — call RPC (safe to fail)
+      await supabase.rpc("update_user_streak" as never, { p_user_id: userId } as never).then(() => {}).catch(() => {});
+
+      const { data: streakRow } = await supabase
+        .from("user_streaks")
+        .select("current_streak")
+        .eq("user_id", userId)
+        .single();
+
+      const newStreak = (streakRow as any)?.current_streak ?? 1;
+
+      // Detect XP milestone crossed
+      const XP_MILESTONES = [50, 100, 250, 500, 1000];
+      const xpMilestone = XP_MILESTONES.find((m) => prevXp < m && newXpTotal >= m) ?? null;
+
+      setMilestoneInfo({
+        xpEarned: xp,
+        newXpTotal,
+        newStreak,
+        isFirstLesson: (lessonCount ?? 0) === 1,
+        xpMilestone,
+      });
     } catch {
-      // Non-blocking
+      // Non-blocking — milestone info stays null, completion screen still shows
     }
   };
 
@@ -310,12 +346,15 @@ export default function Stage() {
   if (completed) {
     const total = correctCount + wrongCount;
     const accuracy = total > 0 ? correctCount / total : 1;
-    const xp = Math.round(XP_PER_STAGE * Math.max(0.5, accuracy));
+    const xp = milestoneInfo?.xpEarned ?? Math.round(XP_PER_STAGE * Math.max(0.5, accuracy));
     return (
       <CompletionScreen
         stageName={stage.name}
         xpEarned={xp}
         accuracy={accuracy}
+        isFirstLesson={milestoneInfo?.isFirstLesson ?? false}
+        newStreak={milestoneInfo?.newStreak ?? 0}
+        xpMilestone={milestoneInfo?.xpMilestone ?? null}
         onContinue={() => navigate("/course-map")}
       />
     );

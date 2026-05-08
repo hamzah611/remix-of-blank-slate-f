@@ -328,6 +328,8 @@ const CourseMap = () => {
   const [usingFallback, setUsingFallback] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userPlan, setUserPlan] = useState<"free" | "premium">("free");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardStep, setOnboardStep] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -448,6 +450,12 @@ const CourseMap = () => {
       setTotalXp((xpData as any)?.total_xp ?? 0);
       setStreak((streakData as any)?.current_streak ?? 0);
       setUserPlan(((profileData as any)?.plan ?? "free") as "free" | "premium");
+
+      // Show onboarding once for new users (no completed lessons)
+      const completedCount = (progressData ?? []).length;
+      if (completedCount === 0 && !localStorage.getItem("guftugu_onboarded")) {
+        setShowOnboarding(true);
+      }
     } catch (err) {
       console.error("CourseMap loadAll failed:", err);
       setUsingFallback(true);
@@ -557,8 +565,12 @@ const CourseMap = () => {
             <LogOut size={16} />
           </button>
 
-          {/* Avatar */}
-          {displayName && <UserAvatar name={displayName} />}
+          {/* Avatar — click to open profile */}
+          {displayName && (
+            <button onClick={() => navigate("/profile")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, borderRadius: "50%" }} aria-label="Profile">
+              <UserAvatar name={displayName} />
+            </button>
+          )}
         </div>
       </nav>
 
@@ -586,17 +598,26 @@ const CourseMap = () => {
 
         {/* Units */}
         {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "64px 0" }}>
-            <div
-              className="animate-spin"
-              style={{
-                width: 36,
-                height: 36,
-                border: "3px solid rgba(30,45,61,0.08)",
-                borderTop: "3px solid #D4A853",
-                borderRadius: "50%",
-              }}
-            />
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="gf-card" style={{ borderRadius: 16, overflow: "hidden" }}>
+                <div className="gf-unit-card-inner">
+                  <div style={{ marginBottom: 14 }}>
+                    <div className="gf-skeleton" style={{ width: 60, height: 10, borderRadius: 6, marginBottom: 10 }} />
+                    <div className="gf-skeleton" style={{ width: `${50 + i * 20}%`, height: 22, borderRadius: 8 }} />
+                  </div>
+                  <div className="gf-skeleton" style={{ width: "100%", height: 6, borderRadius: 99, marginBottom: 20 }} />
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    {[0,1,2,3,4,5].map((j) => (
+                      <div key={j} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                        <div className="gf-skeleton" style={{ width: 44, height: 44, borderRadius: "50%" }} />
+                        <div className="gf-skeleton" style={{ width: 36, height: 8, borderRadius: 6 }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : usingFallback ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -695,6 +716,107 @@ const CourseMap = () => {
           </div>
         )}
       </div>
+
+      {/* ── Onboarding overlay ── */}
+      {showOnboarding && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            backgroundColor: "rgba(30,45,61,0.55)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "24px",
+            backdropFilter: "blur(4px)",
+            WebkitBackdropFilter: "blur(4px)",
+          }}
+          onClick={() => {
+            if (onboardStep < 2) { setOnboardStep(onboardStep + 1); } else {
+              setShowOnboarding(false);
+              localStorage.setItem("guftugu_onboarded", "1");
+            }
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#FAF6F0", borderRadius: 24, padding: "40px 32px",
+              maxWidth: 380, width: "100%", textAlign: "center",
+              boxShadow: "0 24px 64px rgba(30,45,61,0.25)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Step indicator */}
+            <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 28 }}>
+              {[0, 1, 2].map((s) => (
+                <div key={s} style={{
+                  width: s === onboardStep ? 20 : 6, height: 6, borderRadius: 99,
+                  backgroundColor: s === onboardStep ? "#D4A853" : "rgba(30,45,61,0.15)",
+                  transition: "width 250ms ease, background 250ms ease",
+                }} />
+              ))}
+            </div>
+
+            {/* Content per step */}
+            {onboardStep === 0 && (
+              <>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🌙</div>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 24, fontWeight: 700, color: "#1E2D3D", marginBottom: 12, letterSpacing: "-0.02em" }}>
+                  Welcome to Guftugu
+                </h2>
+                <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: "rgba(30,45,61,0.6)", lineHeight: 1.65, marginBottom: 0 }}>
+                  Learn Urdu through short, interactive lessons designed for complete beginners.
+                </p>
+              </>
+            )}
+            {onboardStep === 1 && (
+              <>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>⭐</div>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 24, fontWeight: 700, color: "#1E2D3D", marginBottom: 12, letterSpacing: "-0.02em" }}>
+                  Earn XP as you go
+                </h2>
+                <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: "rgba(30,45,61,0.6)", lineHeight: 1.65, marginBottom: 0 }}>
+                  Each stage you complete earns XP. Keep a daily streak going to build momentum.
+                </p>
+              </>
+            )}
+            {onboardStep === 2 && (
+              <>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>✨</div>
+                <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 24, fontWeight: 700, color: "#1E2D3D", marginBottom: 12, letterSpacing: "-0.02em" }}>
+                  You're all set!
+                </h2>
+                <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: "rgba(30,45,61,0.6)", lineHeight: 1.65, marginBottom: 0 }}>
+                  Start with your first stage — tap any circle to begin. Good luck!
+                </p>
+              </>
+            )}
+
+            {/* CTA */}
+            <button
+              onClick={() => {
+                if (onboardStep < 2) {
+                  setOnboardStep(onboardStep + 1);
+                } else {
+                  setShowOnboarding(false);
+                  localStorage.setItem("guftugu_onboarded", "1");
+                }
+              }}
+              style={{
+                marginTop: 28, width: "100%", padding: "15px",
+                borderRadius: 14, border: "none",
+                backgroundColor: "#1E2D3D", color: "#FAF6F0",
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: 16, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(30,45,61,0.2)",
+                transition: "transform 80ms ease",
+              }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
+              onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              {onboardStep < 2 ? "Next →" : "Start learning →"}
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

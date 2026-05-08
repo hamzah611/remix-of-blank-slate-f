@@ -12,6 +12,9 @@ import {
   MessageCircle,
   LogOut,
   Shield,
+  X,
+  Copy,
+  MessageSquare,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminRole } from "./admin/adminTypes";
@@ -164,6 +167,215 @@ function StageCircle({
 
 // ─── Unit card ────────────────────────────────────────────────────────────────
 
+// ─── Upgrade Modal ───────────────────────────────────────────────────────────
+
+const SADAPAY = "03330600332";
+const WHATSAPP = "03330600332";
+
+function UpgradeModal({ onClose }: { onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyNumber = () => {
+    navigator.clipboard.writeText(SADAPAY).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        backgroundColor: "rgba(30,45,61,0.6)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 24,
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: "#FAF6F0",
+          borderRadius: 24,
+          padding: "36px 28px 28px",
+          maxWidth: 400,
+          width: "100%",
+          boxShadow: "0 32px 80px rgba(30,45,61,0.28)",
+          position: "relative",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute", top: 16, right: 16,
+            background: "none", border: "none", cursor: "pointer",
+            color: "rgba(30,45,61,0.35)", padding: 4, borderRadius: 8,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "color 150ms ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#1E2D3D")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(30,45,61,0.35)")}
+        >
+          <X size={18} />
+        </button>
+
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
+          <h2 style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 24, fontWeight: 700, color: "#1E2D3D",
+            letterSpacing: "-0.02em", marginBottom: 8,
+          }}>
+            Upgrade to Premium
+          </h2>
+          <p style={{
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 14, color: "rgba(30,45,61,0.55)", lineHeight: 1.6,
+          }}>
+            Unlock all units and continue your Urdu journey. Pay manually and your account will be upgraded within 24 hours.
+          </p>
+        </div>
+
+        {/* Steps */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+
+          {/* Step 1 — SadaPay */}
+          <div style={{
+            backgroundColor: "#FFFFFF",
+            border: "1px solid rgba(30,45,61,0.08)",
+            borderRadius: 14, padding: "16px 18px",
+          }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "0.08em", color: "rgba(30,45,61,0.4)", marginBottom: 8,
+            }}>
+              Step 1 — Send payment via SadaPay
+            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div>
+                <p style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 22, fontWeight: 700, color: "#1E2D3D",
+                  letterSpacing: "0.04em",
+                }}>
+                  {SADAPAY}
+                </p>
+                <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: "rgba(30,45,61,0.4)", marginTop: 2 }}>
+                  SadaPay account number
+                </p>
+              </div>
+              <button
+                onClick={copyNumber}
+                style={{
+                  display: "flex", alignItems: "center", gap: 5,
+                  padding: "8px 14px", borderRadius: 10,
+                  backgroundColor: copied ? "rgba(76,175,80,0.1)" : "rgba(30,45,61,0.06)",
+                  border: `1px solid ${copied ? "rgba(76,175,80,0.3)" : "rgba(30,45,61,0.1)"}`,
+                  color: copied ? "#4CAF50" : "#1E2D3D",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  transition: "all 200ms ease",
+                  flexShrink: 0,
+                }}
+              >
+                <Copy size={12} />
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
+
+          {/* Step 2 — WhatsApp */}
+          <div style={{
+            backgroundColor: "#FFFFFF",
+            border: "1px solid rgba(30,45,61,0.08)",
+            borderRadius: 14, padding: "16px 18px",
+          }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "0.08em", color: "rgba(30,45,61,0.4)", marginBottom: 8,
+            }}>
+              Step 2 — Send screenshot to WhatsApp
+            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <div>
+                <p style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 22, fontWeight: 700, color: "#1E2D3D",
+                  letterSpacing: "0.04em",
+                }}>
+                  {WHATSAPP}
+                </p>
+                <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: "rgba(30,45,61,0.4)", marginTop: 2 }}>
+                  Send your payment screenshot here
+                </p>
+              </div>
+              <a
+                href={`https://wa.me/92${WHATSAPP.replace(/^0/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex", alignItems: "center", gap: 5,
+                  padding: "8px 14px", borderRadius: 10,
+                  backgroundColor: "rgba(37,211,102,0.1)",
+                  border: "1px solid rgba(37,211,102,0.3)",
+                  color: "#128C7E",
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  textDecoration: "none",
+                  flexShrink: 0,
+                  transition: "all 200ms ease",
+                }}
+              >
+                <MessageSquare size={12} />
+                Open
+              </a>
+            </div>
+          </div>
+
+          {/* Step 3 — Wait */}
+          <div style={{
+            backgroundColor: "rgba(212,168,83,0.07)",
+            border: "1px solid rgba(212,168,83,0.2)",
+            borderRadius: 14, padding: "14px 18px",
+            display: "flex", alignItems: "center", gap: 12,
+          }}>
+            <span style={{ fontSize: 20 }}>⏳</span>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, color: "rgba(30,45,61,0.65)", lineHeight: 1.5,
+            }}>
+              Your account will be upgraded to Premium within <strong style={{ color: "#1E2D3D" }}>24 hours</strong> of receiving your payment.
+            </p>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <button
+          onClick={onClose}
+          style={{
+            width: "100%", padding: "14px",
+            borderRadius: 14, border: "none",
+            backgroundColor: "#1E2D3D", color: "#FAF6F0",
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 15, fontWeight: 700, cursor: "pointer",
+            transition: "transform 80ms ease",
+          }}
+          onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
+          onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function UnitCard({
   unit,
   unitIdx,
@@ -173,6 +385,7 @@ function UnitCard({
   isUnitLocked,
   isPlanLocked,
   onStageClick,
+  onUpgrade,
 }: {
   unit: Unit;
   unitIdx: number;
@@ -182,6 +395,7 @@ function UnitCard({
   isUnitLocked: boolean;
   isPlanLocked: boolean;
   onStageClick: (stageId: string, state: StageState) => void;
+  onUpgrade: () => void;
 }) {
   const completedCount = stages.filter((s) => completedStageIds.has(s.id)).length;
 
@@ -195,17 +409,22 @@ function UnitCard({
   return (
     <div
       className="gf-card"
+      onClick={isPlanLocked ? onUpgrade : undefined}
       style={{
         borderRadius: 16,
-        opacity: isUnitLocked ? 0.6 : 1,
-        transition: "opacity 200ms ease",
+        opacity: isUnitLocked ? 0.65 : 1,
+        transition: "opacity 200ms ease, transform 150ms ease",
         position: "relative",
+        cursor: isPlanLocked ? "pointer" : "default",
       }}
+      onMouseEnter={(e) => { if (isPlanLocked) e.currentTarget.style.transform = "translateY(-2px)"; }}
+      onMouseLeave={(e) => { if (isPlanLocked) e.currentTarget.style.transform = "translateY(0)"; }}
     >
       <div className="gf-unit-card-inner">
       {/* Lock badge */}
       {isUnitLocked && (
-        <div
+        <button
+          onClick={(e) => { e.stopPropagation(); if (isPlanLocked) onUpgrade(); }}
           style={{
             position: "absolute",
             top: 16,
@@ -213,25 +432,30 @@ function UnitCard({
             display: "flex",
             alignItems: "center",
             gap: 4,
-            backgroundColor: isPlanLocked ? "rgba(212,168,83,0.12)" : "rgba(30,45,61,0.06)",
+            backgroundColor: isPlanLocked ? "rgba(212,168,83,0.15)" : "rgba(30,45,61,0.06)",
+            border: isPlanLocked ? "1px solid rgba(212,168,83,0.35)" : "none",
             borderRadius: 99,
-            padding: "4px 10px",
+            padding: "5px 11px",
+            cursor: isPlanLocked ? "pointer" : "default",
+            transition: "background 150ms ease",
           }}
+          onMouseEnter={(e) => { if (isPlanLocked) e.currentTarget.style.backgroundColor = "rgba(212,168,83,0.25)"; }}
+          onMouseLeave={(e) => { if (isPlanLocked) e.currentTarget.style.backgroundColor = "rgba(212,168,83,0.15)"; }}
         >
           <Lock size={10} color={isPlanLocked ? "#C17B4A" : "rgba(30,45,61,0.3)"} strokeWidth={2.5} />
           <span
             style={{
               fontSize: 10,
-              fontWeight: 600,
+              fontWeight: 700,
               color: isPlanLocked ? "#C17B4A" : "rgba(30,45,61,0.35)",
               fontFamily: "'Inter', system-ui, sans-serif",
               letterSpacing: "0.06em",
               textTransform: "uppercase",
             }}
           >
-            {isPlanLocked ? "Premium" : "Locked"}
+            {isPlanLocked ? "Upgrade ↑" : "Locked"}
           </span>
-        </div>
+        </button>
       )}
 
       {/* Unit header row */}
@@ -330,6 +554,7 @@ const CourseMap = () => {
   const [userPlan, setUserPlan] = useState<"free" | "premium">("free");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardStep, setOnboardStep] = useState(0);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession()
@@ -526,6 +751,28 @@ const CourseMap = () => {
             </span>
           </div>
 
+          {/* Upgrade pill — free users only */}
+          {userPlan === "free" && !loading && (
+            <button
+              onClick={() => setShowUpgrade(true)}
+              style={{
+                display: "flex", alignItems: "center", gap: 5,
+                background: "linear-gradient(135deg, #D4A853 0%, #C17B4A 100%)",
+                border: "none", borderRadius: 999, padding: "6px 12px",
+                cursor: "pointer", color: "#FFFFFF",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 12, fontWeight: 700,
+                boxShadow: "0 2px 10px rgba(212,168,83,0.35)",
+                transition: "transform 100ms ease, box-shadow 150ms ease",
+                letterSpacing: "0.01em",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,168,83,0.5)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(212,168,83,0.35)"; }}
+            >
+              ⭐ Upgrade
+            </button>
+          )}
+
           {/* Admin switch */}
           {isAdmin && (
             <button
@@ -709,6 +956,7 @@ const CourseMap = () => {
                     isUnitLocked={locked}
                     isPlanLocked={planLocked}
                     onStageClick={handleStageClick}
+                    onUpgrade={() => setShowUpgrade(true)}
                   />
                 </div>
               );
@@ -716,6 +964,9 @@ const CourseMap = () => {
           </div>
         )}
       </div>
+
+      {/* ── Upgrade modal ── */}
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
 
       {/* ── Onboarding overlay ── */}
       {showOnboarding && (

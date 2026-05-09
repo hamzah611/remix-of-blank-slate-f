@@ -623,6 +623,9 @@ const CourseMap = () => {
 
   const loadAll = async (uid: string) => {
     setLoading(true);
+    setUsingFallback(false);   // reset so a successful switch clears any previous fallback
+    setUnits([]);              // clear stale data from the previous language
+    setStagesByUnit({});
     try {
       const { data: langData, error: langErr } = await supabase
         .from("languages")

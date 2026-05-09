@@ -763,7 +763,6 @@ const CourseMap = () => {
 
   const handleLanguageSwitch = (lang: string) => {
     if (lang === activeLanguage) return;
-    if (userPlan === "free") { setShowUpgrade(true); return; }
     localStorage.setItem("guftugu_language", lang);
     setActiveLanguage(lang);
     // useEffect will re-run loadAll automatically
@@ -898,7 +897,6 @@ const CourseMap = () => {
           <div style={{ display: "flex", gap: 8 }}>
             {SUBJECTS.map((subj) => {
               const isActive = activeLanguage.toLowerCase() === subj.name.toLowerCase();
-              const isLocked = !isActive && userPlan === "free";
               return (
                 <button
                   key={subj.name}
@@ -938,9 +936,6 @@ const CourseMap = () => {
                     {subj.native}
                   </span>
                   {subj.name}
-                  {isLocked && (
-                    <Lock size={11} strokeWidth={2.5} style={{ opacity: 0.55 }} />
-                  )}
                 </button>
               );
             })}

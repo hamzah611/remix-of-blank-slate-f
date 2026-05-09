@@ -747,14 +747,10 @@ const CourseMap = () => {
   })();
 
   const isUnitLocked = (unitIdx: number): boolean => {
-    if (unitIdx === 0) return false;
-    // Free plan: all units after the first are locked
-    if (userPlan === "free") return true;
-    // Premium: locked until previous unit is complete
-    const prevUnit = units[unitIdx - 1];
-    if (!prevUnit) return true;
-    const prevStages = stagesByUnit[prevUnit.id] ?? [];
-    return prevStages.length > 0 && !prevStages.every((s) => completedStageIds.has(s.id));
+    // Admins and premium users: all units immediately accessible
+    if (isAdmin || userPlan === "premium") return false;
+    // Free plan: only the first unit is free
+    return unitIdx > 0;
   };
 
   const handleStageClick = (stageId: string, state: StageState) => {

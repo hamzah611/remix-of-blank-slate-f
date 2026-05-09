@@ -363,6 +363,7 @@ export type Database = {
           current_streak: number
           id: string
           last_active_date: string | null
+          last_activity: string | null
           longest_streak: number
           user_id: string
         }
@@ -370,6 +371,7 @@ export type Database = {
           current_streak?: number
           id?: string
           last_active_date?: string | null
+          last_activity?: string | null
           longest_streak?: number
           user_id: string
         }
@@ -377,6 +379,7 @@ export type Database = {
           current_streak?: number
           id?: string
           last_active_date?: string | null
+          last_activity?: string | null
           longest_streak?: number
           user_id?: string
         }
@@ -424,6 +427,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_my_plan: { Args: never; Returns: string }
       get_user_analytics: {
         Args: never
         Returns: {
@@ -435,12 +439,12 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_my_plan: { Args: Record<never, never>; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       set_user_plan: {
         Args: { new_plan: string; target_user_id: string }
         Returns: undefined
       }
+      update_user_streak: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

@@ -720,7 +720,8 @@ const CourseMap = () => {
       setCompletedStageIds(completed);
       setTotalXp((xpData as any)?.total_xp ?? 0);
       setStreak((streakData as any)?.current_streak ?? 0);
-      setUserPlan(((profileData as any)?.plan ?? "free") as "free" | "premium");
+      const planFromDB = ((profileData as any)?.plan ?? "free") as "free" | "premium";
+      setUserPlan(isAdmin ? "premium" : planFromDB);
 
       // Show onboarding once for new users (no completed lessons)
       const completedCount = (progressData ?? []).length;

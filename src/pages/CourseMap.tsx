@@ -709,14 +709,18 @@ const CourseMap = () => {
         .eq("user_id", uid)
         .maybeSingle();
 
-      const { data: planData } = await supabase.rpc("get_my_plan");
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("user_id", uid)
+        .maybeSingle();
 
       setUnits(normalizedUnits);
       setStagesByUnit(grouped);
       setCompletedStageIds(completed);
       setTotalXp((xpData as any)?.total_xp ?? 0);
       setStreak((streakData as any)?.current_streak ?? 0);
-      const planFromDB = ((planData as string | null) ?? "free") as "free" | "premium";
+      const planFromDB = (profileData?.plan ?? "free") as "free" | "premium";
       setUserPlan(isAdmin ? "premium" : planFromDB);
 
       // Show onboarding once for new users (no completed lessons)

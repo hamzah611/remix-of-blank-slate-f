@@ -435,6 +435,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_my_plan: { Args: Record<never, never>; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       set_user_plan: {
         Args: { new_plan: string; target_user_id: string }

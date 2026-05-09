@@ -237,7 +237,7 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
             fontSize: 14, color: "rgba(30,45,61,0.55)", lineHeight: 1.6,
             marginBottom: 16,
           }}>
-            Unlock all units and continue your Urdu journey.
+            Unlock all units across <strong style={{ color: "#1E2D3D" }}>both subjects</strong> — Urdu &amp; Sindhi.
           </p>
 
           {/* Pricing cards */}
@@ -572,9 +572,16 @@ function UnitCard({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+const SUBJECTS = [
+  { name: "Urdu",   native: "اردو"  },
+  { name: "Sindhi", native: "سنڌي" },
+];
+
 const CourseMap = () => {
   const navigate = useNavigate();
-  const language = localStorage.getItem("guftugu_language") || "Urdu";
+  const [activeLanguage, setActiveLanguage] = useState(
+    () => localStorage.getItem("guftugu_language") || "Urdu"
+  );
 
   const [units, setUnits] = useState<Unit[]>([]);
   const [stagesByUnit, setStagesByUnit] = useState<Record<string, Stage[]>>({});
@@ -611,7 +618,8 @@ const CourseMap = () => {
   useEffect(() => {
     if (!userId) return;
     loadAll(userId);
-  }, [userId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, activeLanguage]);
 
   const loadAll = async (uid: string) => {
     setLoading(true);
@@ -619,7 +627,7 @@ const CourseMap = () => {
       const { data: langData, error: langErr } = await supabase
         .from("languages")
         .select("id")
-        .ilike("name", language)
+        .ilike("name", activeLanguage)
         .maybeSingle();
 
       if (langErr) throw langErr;
@@ -750,6 +758,14 @@ const CourseMap = () => {
     navigate(`/stage/${stageId}`);
   };
 
+  const handleLanguageSwitch = (lang: string) => {
+    if (lang === activeLanguage) return;
+    if (userPlan === "free") { setShowUpgrade(true); return; }
+    localStorage.setItem("guftugu_language", lang);
+    setActiveLanguage(lang);
+    // useEffect will re-run loadAll automatically
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
@@ -861,9 +877,6 @@ const CourseMap = () => {
 
         {/* Page heading */}
         <div className="animate-slide-up delay-50" style={{ marginBottom: 32 }}>
-          <p className="gf-label" style={{ marginBottom: 8 }}>
-            {language}
-          </p>
           <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
@@ -872,10 +885,63 @@ const CourseMap = () => {
               color: "#1E2D3D",
               letterSpacing: "-0.02em",
               lineHeight: 1.15,
+              marginBottom: 16,
             }}
           >
             Your Journey
           </h1>
+
+          {/* Language switcher */}
+          <div style={{ display: "flex", gap: 8 }}>
+            {SUBJECTS.map((subj) => {
+              const isActive = activeLanguage.toLowerCase() === subj.name.toLowerCase();
+              const isLocked = !isActive && userPlan === "free";
+              return (
+                <button
+                  key={subj.name}
+                  onClick={() => handleLanguageSwitch(subj.name)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 7,
+                    padding: "8px 16px", borderRadius: 999,
+                    border: isActive
+                      ? "1.5px solid #1E2D3D"
+                      : "1.5px solid rgba(30,45,61,0.18)",
+                    backgroundColor: isActive ? "#1E2D3D" : "transparent",
+                    color: isActive ? "#FAF6F0" : "rgba(30,45,61,0.5)",
+                    fontFamily: "'Inter', system-ui, sans-serif",
+                    fontSize: 13, fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 150ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = "rgba(30,45,61,0.4)";
+                      e.currentTarget.style.color = "#1E2D3D";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = "rgba(30,45,61,0.18)";
+                      e.currentTarget.style.color = "rgba(30,45,61,0.5)";
+                    }
+                  }}
+                >
+                  <span style={{
+                    fontFamily: "'Amiri', serif",
+                    fontSize: 15,
+                    lineHeight: 1,
+                    color: isActive ? "#FAF6F0" : "rgba(30,45,61,0.45)",
+                  }}>
+                    {subj.native}
+                  </span>
+                  {subj.name}
+                  {isLocked && (
+                    <Lock size={11} strokeWidth={2.5} style={{ opacity: 0.55 }} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Units */}

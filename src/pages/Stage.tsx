@@ -207,7 +207,11 @@ export default function Stage() {
       );
 
       // Streak — call RPC (safe to fail)
-      await supabase.rpc("update_user_streak" as never, { p_user_id: userId } as never).then(() => {}).catch(() => {});
+      try {
+        await supabase.rpc("update_user_streak" as never, { p_user_id: userId } as never);
+      } catch {
+        // non-blocking
+      }
 
       const { data: streakRow } = await supabase
         .from("user_streaks")

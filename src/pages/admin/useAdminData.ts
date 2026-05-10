@@ -240,6 +240,13 @@ export async function setUnitStatus(id: string, status: ContentStatus) {
 // Validate then bulk-publish a unit (unit + all stages + all questions).
 // Returns an array of stage names that fail validation (empty = OK to publish).
 export async function publishUnit(unitId: string): Promise<string[]> {
+  const { data: unitRow, error: unitErr } = await supabase
+    .from("units")
+    .select("course_id")
+    .eq("id", unitId)
+    .single();
+  if (unitErr) throw unitErr;
+
   // Fetch stages
   const { data: stages, error: stageErr } = await supabase
     .from("stages")
@@ -276,10 +283,22 @@ export async function publishUnit(unitId: string): Promise<string[]> {
     await supabase.from("questions").update({ status: "published" } as never).in("stage_id", stageIds);
   }
 
+  await supabase
+    .from("courses")
+    .update({ status: "published" } as never)
+    .eq("id", unitRow.course_id);
+
   return [];
 }
 
 export async function unpublishUnit(unitId: string) {
+  const { data: unitRow, error: unitErr } = await supabase
+    .from("units")
+    .select("course_id")
+    .eq("id", unitId)
+    .single();
+  if (unitErr) throw unitErr;
+
   const { data: stages } = await supabase.from("stages").select("id").eq("unit_id", unitId);
   const stageIds = (stages ?? []).map((s) => s.id);
 
@@ -288,6 +307,19 @@ export async function unpublishUnit(unitId: string) {
     await supabase.from("stages").update({ status: "draft" } as never).in("id", stageIds);
     await supabase.from("questions").update({ status: "draft" } as never).in("stage_id", stageIds);
   }
+
+  const { data: remainingPublishedUnits, error: remainingErr } = await supabase
+    .from("units")
+    .select("id")
+    .eq("course_id", unitRow.course_id)
+    .eq("status", "published")
+    .limit(1);
+  if (remainingErr) throw remainingErr;
+
+  await supabase
+    .from("courses")
+    .update({ status: remainingPublishedUnits && remainingPublishedUnits.length > 0 ? "published" : "draft" } as never)
+    .eq("id", unitRow.course_id);
 }
 
 // ── Stage question counts (for sidebar badges) ─────────────
